@@ -1,25 +1,22 @@
-import logo from './logo.svg';
-import './App.css';
+import "./styles.css";
+import HorizontalScroll from "react-scroll-horizontal";
 
-function App() {
+export default function App() {
+  const child = { width: `12em`, height: `100%` };
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <HorizontalScroll>
+        <div style={child}>
+          <h1>Hello 1</h1>
+        </div>
+        <div style={child}>
+          <h1>Hello 2</h1>
+        </div>
+
+        <div style={child}>
+          <h1>Hello 3</h1>
+        </div>
+      </HorizontalScroll>
     </div>
   );
 }
-
-export default App;
