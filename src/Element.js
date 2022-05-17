@@ -2,17 +2,11 @@ import React from 'react'
 import  {Parallax, useParallax } from 'react-scroll-parallax'
 
 function Element() {
-  const parallax = useParallax<HTMLDivElement>({
-    rotateY: [0, 360],
-  });
+  const { ref } = useParallax<HTMLDivElement>({ speed: 10 });
   return (
-    <div ref={parallax.ref} className="spinner-border">
-      😵‍💫
-      <div className="diamond">💎</div>
-      <div className="clown">🤡</div>
-      <div className="money">💰</div>
-      <div className="hand">👌🏻</div>
-    </div>
+    <div ref={ref} className="absolute inset-0 flex items-center justify-center">
+        <h1 className="text-8xl text-black font-thin">Hello World!</h1>
+      </div>
   ); 
 }
 

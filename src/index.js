@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
@@ -7,7 +8,7 @@ import { ParallaxProvider } from 'react-scroll-parallax';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <ParallaxProvider scrollAxis="horizontal">
+  <ParallaxProvider scrollAxis='Horizontal'>
   <React.StrictMode>
     <App />
   </React.StrictMode>
