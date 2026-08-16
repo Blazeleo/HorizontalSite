@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Replica — QI Catalog intro (learning sandbox)</title>
+<!--
+  Private, unpublished replication sandbox. Rebuild of the scroll-driven intro
+  on https://qodeinteractive.com/catalog/ , ported from that site's own
+  bundle.js / bundle.css rather than guessed at from screenshots.
+  Spec + provenance + known deviations: ./SPEC.md
+-->
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Heebo:300,400,500,700,900&display=swap" />
+<link rel="stylesheet" href="css/intro.css" />
+</head>
+<body>
+
+<!-- the catalog's left rail. Held off-screen by .q-with-intro, slid in by the
+     intro's closing beat. -->
+<header id="q-header">
+  <span class="q-wordmark">QI<br />Catalog</span>
+  <span class="q-burger"></span>
+  <span class="q-footnote">replica sandbox<br />not for publication</span>
+</header>
+
+<div id="q-main-wrapper">
+
+  <div id="q-intro">
+
+    <!-- the entire length of the intro: 600vh of nothing, scrolled smoothly.
+         Its offset drives the master timeline's playhead. -->
+    <div id="q-scroll-vh"><div class="q-sizer"></div></div>
+
+    <section id="q-pt-1" class="q-pt">
+      <div class="q-pt-mask">
+        <h1 id="q-intro-title" class="q-pt-item">
+          <span class="q-move q-1"><span class="q-skew">Who Says</span> <span class="q-shadow q-front" aria-hidden="true">Who Says</span> <span class="q-shadow q-back" aria-hidden="true">Who Says</span> </span>
+          <span class="q-move q-2"><span class="q-skew">WordPress</span> <span class="q-shadow q-front" aria-hidden="true">WordPress</span> <span class="q-shadow q-back" aria-hidden="true">WordPress</span> </span>
+          <span class="q-move q-3"><span class="q-skew">Can't be</span> <span class="q-shadow q-front" aria-hidden="true">Can't be</span> <span class="q-shadow q-back" aria-hidden="true">Can't be</span> </span>
+          <span class="q-move q-4"><span class="q-skew">Art <span class="q-mark">?</span></span> <span class="q-shadow q-front" aria-hidden="true">Art <span class="q-mark">?</span></span> <span class="q-shadow q-back" aria-hidden="true">Art <span class="q-mark">?</span></span> </span>
+        </h1>
+      </div>
+    </section>
+
+    <!-- 13 slides, in the site's own authored order (not alphabetical) -->
+    <section id="q-pt-2" class="q-pt">
+      <div id="q-intro-slider">
+        <div class="q-inner">
+          <div class="q-intro-slide" data-index="0"><img src="assets/intro/kenozoik.jpg" alt="kenozoik screenshot" /></div>
+          <div class="q-intro-slide" data-index="1"><img src="assets/intro/haar.jpg" alt="haar screenshot" /></div>
+          <div class="q-intro-slide" data-index="2"><img src="assets/intro/blaze.jpg" alt="blaze screenshot" /></div>
+          <div class="q-intro-slide" data-index="3"><img src="assets/intro/smilte.jpg" alt="smilte screenshot" /></div>
+          <div class="q-intro-slide" data-index="4"><img src="assets/intro/manon.jpg" alt="manon screenshot" /></div>
+          <div class="q-intro-slide" data-index="5"><img src="assets/intro/dieter.jpg" alt="dieter screenshot" /></div>
+          <div class="q-intro-slide" data-index="6"><img src="assets/intro/tetsuo.jpg" alt="tetsuo screenshot" /></div>
+          <div class="q-intro-slide" data-index="7"><img src="assets/intro/galatia.jpg" alt="galatia screenshot" /></div>
+          <div class="q-intro-slide" data-index="8"><img src="assets/intro/amedeo.jpg" alt="amedeo screenshot" /></div>
+          <div class="q-intro-slide" data-index="9"><img src="assets/intro/monolab.jpg" alt="monolab screenshot" /></div>
+          <div class="q-intro-slide" data-index="10"><img src="assets/intro/ion.jpg" alt="ion screenshot" /></div>
+          <div class="q-intro-slide" data-index="11"><img src="assets/intro/penumbra.jpg" alt="penumbra screenshot" /></div>
+          <div class="q-intro-slide" data-index="12"><img src="assets/intro/koto.jpg" alt="koto screenshot" /></div>
+        </div>
+      </div>
+    </section>
+
+    <div id="q-intro-bg"></div>
+
+    <div id="q-skip-the-line">
+      <span class="q-inner">
+        <span id="q-skip-label" class="q-link-part q-link-label">Skip the intro</span>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 17 12" aria-hidden="true">
+          <line x1="0.1" y1="6" x2="16.2" y2="6" />
+          <polyline points="10.4,11.4 16.1,6 10.4,0.6 " />
+        </svg>
+      </span>
+    </div>
+
+    <!-- hand-drawn chevron-arrow, markup taken verbatim from the source DOM.
+         Its polyline is ~429.6 units long, hence the stroke-dasharray of 430. -->
+    <div id="q-intro-scroll">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 109.1 83.9" aria-hidden="true">
+        <polyline points="0.5,34.5 0.5,34.5 0.5,49.4 80.2,49.4 46.2,83.4 67.2,83.4 98.1,52.5 108.6,42 98.1,31.5 67.2,0.5 46.2,0.5 80.2,34.5 0.5,34.5 " />
+      </svg>
+    </div>
+
+  </div><!-- /#q-intro -->
+
+  <main class="q-homepage">
+    <div id="q-main-list">
+      <div class="q-inner q-shadows">
+        <div class="q-list-wrapper q-main">
+          <ul id="q-themes" class="q-list-part">
+            <li class="q-theme" data-index="0"  data-bg="#fff"    data-color="#c5c5c5"><div class="q-inner"><span class="q-home-to-single q-abs"></span><div class="q-col"><h2 class="q-theme-title"><span>Monolab </span><span class="q-shadow q-front" aria-hidden="true">Monolab </span><span class="q-shadow q-back" aria-hidden="true">Monolab</span></h2></div><h5 class="q-theme-tagline"><span class="q-lead">Clean Design and One-click Project View</span> <span class="q-follow">Clean Design and One-click Project View</span></h5></div></li>
+            <li class="q-theme" data-index="1"  data-bg="#252525" data-color="#363636"><div class="q-inner"><span class="q-home-to-single q-abs"></span><div class="q-col"><h2 class="q-theme-title"><span>Haar </span><span class="q-shadow q-front" aria-hidden="true">Haar </span><span class="q-shadow q-back" aria-hidden="true">Haar</span></h2></div><h5 class="q-theme-tagline"><span class="q-lead">Ancient Greek Art in a Digital Age</span> <span class="q-follow">Ancient Greek Art in a Digital Age</span></h5></div></li>
+            <li class="q-theme" data-index="2"  data-bg="#fafafa" data-color="#ededed"><div class="q-inner"><span class="q-home-to-single q-abs"></span><div class="q-col"><h2 class="q-theme-title"><span>Amedeo </span><span class="q-shadow q-front" aria-hidden="true">Amedeo </span><span class="q-shadow q-back" aria-hidden="true">Amedeo</span></h2></div><h5 class="q-theme-tagline"><span class="q-lead">The Early Avant-Garde Through a Modern Lens</span> <span class="q-follow">The Early Avant-Garde Through a Modern Lens</span></h5></div></li>
+            <li class="q-theme" data-index="3"  data-bg="#191919" data-color="#262626"><div class="q-inner"><span class="q-home-to-single q-abs"></span><div class="q-col"><h2 class="q-theme-title"><span>Tetsuo </span><span class="q-shadow q-front" aria-hidden="true">Tetsuo </span><span class="q-shadow q-back" aria-hidden="true">Tetsuo</span></h2></div><h5 class="q-theme-tagline"><span class="q-lead">Neon-lit Dystopia</span> <span class="q-follow">Neon-lit Dystopia</span></h5></div></li>
+            <li class="q-theme" data-index="4"  data-bg="#161616" data-color="#3b3b3b"><div class="q-inner"><span class="q-home-to-single q-abs"></span><div class="q-col"><h2 class="q-theme-title"><span>Penumbra </span><span class="q-shadow q-front" aria-hidden="true">Penumbra </span><span class="q-shadow q-back" aria-hidden="true">Penumbra</span></h2></div><h5 class="q-theme-tagline"><span class="q-lead">Black &amp; White with a Vibrant Pulse</span> <span class="q-follow">Black &amp; White with a Vibrant Pulse</span></h5></div></li>
+            <li class="q-theme" data-index="5"  data-bg="#0c0b09" data-color="#292825"><div class="q-inner"><span class="q-home-to-single q-abs"></span><div class="q-col"><h2 class="q-theme-title"><span>Galatia </span><span class="q-shadow q-front" aria-hidden="true">Galatia </span><span class="q-shadow q-back" aria-hidden="true">Galatia</span></h2></div><h5 class="q-theme-tagline"><span class="q-lead">Contemporary Design</span> <span class="q-follow">Contemporary Design</span></h5></div></li>
+            <li class="q-theme" data-index="6"  data-bg="#ebebeb" data-color="#dddddd"><div class="q-inner"><span class="q-home-to-single q-abs"></span><div class="q-col"><h2 class="q-theme-title"><span>Koto </span><span class="q-shadow q-front" aria-hidden="true">Koto </span><span class="q-shadow q-back" aria-hidden="true">Koto</span></h2></div><h5 class="q-theme-tagline"><span class="q-lead">An Artistic Rendition of Minimalism</span> <span class="q-follow">An Artistic Rendition of Minimalism</span></h5></div></li>
+            <li class="q-theme" data-index="7"  data-bg="#e0e0e0" data-color="#d1d1d1"><div class="q-inner"><span class="q-home-to-single q-abs"></span><div class="q-col"><h2 class="q-theme-title"><span>Blaze </span><span class="q-shadow q-front" aria-hidden="true">Blaze </span><span class="q-shadow q-back" aria-hidden="true">Blaze</span></h2></div><h5 class="q-theme-tagline"><span class="q-lead">Fearless and Monochrome</span> <span class="q-follow">Fearless and Monochrome</span></h5></div></li>
+            <li class="q-theme" data-index="8"  data-bg="#f1f0ee" data-color="#f84e82"><div class="q-inner"><span class="q-home-to-single q-abs"></span><div class="q-col"><h2 class="q-theme-title"><span>Kenozoik </span><span class="q-shadow q-front" aria-hidden="true">Kenozoik </span><span class="q-shadow q-back" aria-hidden="true">Kenozoik</span></h2></div><h5 class="q-theme-tagline"><span class="q-lead">Digital Collage Art</span> <span class="q-follow">Digital Collage Art</span></h5></div></li>
+            <li class="q-theme" data-index="9"  data-bg="#efeef3" data-color="#d4d3d8"><div class="q-inner"><span class="q-home-to-single q-abs"></span><div class="q-col"><h2 class="q-theme-title"><span>Dieter </span><span class="q-shadow q-front" aria-hidden="true">Dieter </span><span class="q-shadow q-back" aria-hidden="true">Dieter</span></h2></div><h5 class="q-theme-tagline"><span class="q-lead">Bold and Playful Design</span> <span class="q-follow">Bold and Playful Design</span></h5></div></li>
+            <li class="q-theme" data-index="10" data-bg="#febfae" data-color="#0f0f0f"><div class="q-inner"><span class="q-home-to-single q-abs"></span><div class="q-col"><h2 class="q-theme-title"><span>Smiltė </span><span class="q-shadow q-front" aria-hidden="true">Smiltė </span><span class="q-shadow q-back" aria-hidden="true">Smiltė</span></h2></div><h5 class="q-theme-tagline"><span class="q-lead">A Modern Mysticism</span> <span class="q-follow">A Modern Mysticism</span></h5></div></li>
+            <li class="q-theme" data-index="11" data-bg="#ffffff" data-color="#000"><div class="q-inner"><span class="q-home-to-single q-abs"></span><div class="q-col"><h2 class="q-theme-title"><span>Manon </span><span class="q-shadow q-front" aria-hidden="true">Manon </span><span class="q-shadow q-back" aria-hidden="true">Manon</span></h2></div><h5 class="q-theme-tagline"><span class="q-lead">Minimalism Built Around the Circle</span> <span class="q-follow">Minimalism Built Around the Circle</span></h5></div></li>
+            <li class="q-theme" data-index="12" data-bg="#fafafa" data-color="#e8e6e7"><div class="q-inner"><span class="q-home-to-single q-abs"></span><div class="q-col"><h2 class="q-theme-title"><span>Ion </span><span class="q-shadow q-front" aria-hidden="true">Ion </span><span class="q-shadow q-back" aria-hidden="true">Ion</span></h2></div><h5 class="q-theme-tagline"><span class="q-lead">Ultramarine Meets White</span> <span class="q-follow">Ultramarine Meets White</span></h5></div></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </main>
+
+</div><!-- /#q-main-wrapper -->
+
+<!-- hover preview art. One frame per project, each its own hand-set size.
+     Sits behind #q-main-list so the soft-light names blend into it. -->
+<div id="q-preview">
+  <div class="q-preview-item q-preview-monolab" data-index="0"><img class="q-preview-image" src="assets/monolab.png" alt="monolab graphic" /></div>
+  <div class="q-preview-item q-preview-haar" data-index="1"><img class="q-preview-image" src="assets/haar.png" alt="haar graphic" /></div>
+  <div class="q-preview-item q-preview-amedeo" data-index="2"><img class="q-preview-image" src="assets/amedeo.png" alt="amedeo graphic" /></div>
+  <div class="q-preview-item q-preview-tetsuo" data-index="3"><img class="q-preview-image" src="assets/tetsuo.png" alt="tetsuo graphic" /></div>
+  <div class="q-preview-item q-preview-penumbra" data-index="4"><img class="q-preview-image" src="assets/penumbra.png" alt="penumbra graphic" /></div>
+  <div class="q-preview-item q-preview-galatia" data-index="5"><img class="q-preview-image" src="assets/galatia.png" alt="galatia graphic" /></div>
+  <div class="q-preview-item q-preview-koto" data-index="6"><img class="q-preview-image" src="assets/koto.png" alt="koto graphic" /></div>
+  <div class="q-preview-item q-preview-blaze" data-index="7"><img class="q-preview-image" src="assets/blaze.png" alt="blaze graphic" /></div>
+  <div class="q-preview-item q-preview-kenozoik" data-index="8"><img class="q-preview-image" src="assets/kenozoik.png" alt="kenozoik graphic" /></div>
+  <div class="q-preview-item q-preview-dieter" data-index="9"><img class="q-preview-image" src="assets/dieter.png" alt="dieter graphic" /></div>
+  <div class="q-preview-item q-preview-smilte" data-index="10"><img class="q-preview-image" src="assets/smilte.png" alt="smiltė graphic" /></div>
+  <div class="q-preview-item q-preview-manon" data-index="11"><img class="q-preview-image" src="assets/manon.png" alt="manon graphic" /></div>
+  <div class="q-preview-item q-preview-ion" data-index="12"><img class="q-preview-image" src="assets/ion.png" alt="ion graphic" /></div>
+</div>
+
+
+<script src="vendor/gsap.min.js"></script>
+<script src="js/smooth-scroll.js"></script>
+<script src="js/intro.js"></script>
+</body>
+</html>

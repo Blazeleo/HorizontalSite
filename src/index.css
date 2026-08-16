@@ -1,0 +1,21 @@
+/* Kept, despite theme.css superseding most of it. Two rules here are still
+   load-bearing and have no equivalent there: the universal margin/padding
+   reset (theme.css only zeroes html, body and headings, so dropping this
+   would hand every <p> and <ul> its UA margins back) and the <footer> rule
+   the Outro relies on. The Poppins @import that used to head this file is
+   gone — theme.css already loads the family, with more weights. */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+}
+
+footer {
+  margin-top: 30px;
+  text-align: center;
+}

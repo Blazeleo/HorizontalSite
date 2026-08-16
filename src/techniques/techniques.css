@@ -1,0 +1,263 @@
+/* ---------- shared demo-only styles ---------- */
+
+.demo-card {
+  flex: 0 0 auto;
+  width: clamp(150px, min(50vw, 30vh), 260px);
+  height: clamp(150px, min(50vw, 30vh), 260px);
+  border-radius: 28px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 1.4rem;
+  font-family: var(--sans);
+  position: relative;
+  overflow: hidden;
+}
+
+.demo-card .num {
+  position: absolute;
+  top: 1.2rem;
+  left: 1.4rem;
+  font-family: var(--display);
+  font-size: 0.85rem;
+  opacity: 0.55;
+}
+
+.demo-card h4 {
+  font-family: var(--display);
+  text-transform: uppercase;
+  font-size: 1.3rem;
+  margin: 0 0 0.2rem;
+}
+
+.demo-card p {
+  font-size: 0.78rem;
+  opacity: 0.85;
+  margin: 0;
+}
+
+/* ---------- 01 scroll-snap ---------- */
+
+/* These two scroll sideways in the page rather than capturing the wheel, so
+   they never steal the reader's vertical scroll the way the framed demos did.
+   What they did do is chain: run a trackpad swipe off either end and the
+   overscroll carried into the document. `contain` keeps the gesture in the
+   rail and stops the end of the track from nudging the page. */
+.rail,
+.drag-row {
+  overscroll-behavior-x: contain;
+}
+
+.rail {
+  display: flex;
+  gap: 1.4rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding: 0.75rem 4vw 1.25rem;
+  width: 100%;
+}
+.rail > .demo-card { scroll-snap-align: center; }
+
+/* ---------- 02 drag row ---------- */
+
+.drag-row {
+  display: flex;
+  gap: 1.4rem;
+  overflow-x: auto;
+  padding: 0.75rem 4vw 1.25rem;
+  width: 100%;
+  cursor: grab;
+  user-select: none;
+}
+.drag-row.dragging { cursor: grabbing; }
+.drag-row.dragging .demo-card { pointer-events: none; }
+
+/* ---------- 03/04/05 — bounded scroll-driven demos ----------
+   Scroll-jack, scroll-driven CSS and GSAP pin all take over the full
+   viewport while scrolling, which makes the "before/after" hard to see
+   on the page itself — so these render inside a fixed-size iframe
+   (same generated code as the Builder) instead of pinning the page. */
+
+.demo-frame-box {
+  width: min(92vw, 900px);
+  height: 60vh;
+  border-radius: 28px;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+  border: 1.5px solid rgba(255, 255, 255, 0.22);
+  background: #fff;
+}
+.section.bg-cream .demo-frame-box {
+  border-color: rgba(43, 39, 231, 0.12);
+}
+.demo-frame {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+.hint {
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
+/* ---------- earned wheel capture (components/ScrollGuard.js) ----------
+   The veil is what makes scrolling past a demo behave like scrolling past
+   anything else. It covers the frame, and because it is a plain button with
+   no scrollable overflow of its own the wheel walks straight past it to the
+   document — so the page moves, and the demo underneath never sees the
+   event. Clicking it hands the wheel over. */
+.scroll-guard {
+  position: relative;
+}
+
+.scroll-guard-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 1.1rem;
+  appearance: none;
+  -webkit-appearance: none;
+  border: 0;
+  cursor: pointer;
+  /* Deliberately barely there. The demo is the illustration and has to stay
+     readable through this — the veil is an affordance, not a curtain. */
+  background: linear-gradient(to top, rgba(17, 17, 17, 0.34), transparent 30%);
+  transition: opacity 0.3s ease;
+}
+.scroll-guard.is-engaged .scroll-guard-veil {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.scroll-guard-label {
+  font-family: var(--sans);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--white);
+  background: rgba(17, 17, 17, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  border-radius: 999px;
+  padding: 0.4em 1em;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.scroll-guard-veil:hover .scroll-guard-label,
+.scroll-guard-veil:focus-visible .scroll-guard-label {
+  background: var(--pink);
+  border-color: var(--pink);
+}
+.scroll-guard-veil:focus-visible {
+  outline: 2px solid var(--pink);
+  outline-offset: -3px;
+}
+
+/* An engaged demo says so, so the reader can tell at a glance which surface
+   the wheel belongs to. Same pink the pill hover uses. */
+.scroll-guard.is-engaged {
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25), 0 0 0 2px var(--pink);
+}
+
+/* ---------- 06 parallax ---------- */
+
+.parallax-stage {
+  position: relative;
+  width: 100%;
+  height: clamp(260px, 48vh, 420px);
+}
+.parallax-layer {
+  position: absolute;
+  transform: translateY(-50%);
+}
+.parallax-layer[data-layer="back"] { left: 8%; top: 22%; }
+.parallax-layer[data-layer="mid"] { left: 38%; top: 40%; }
+.parallax-layer[data-layer="front"] { left: 58%; top: 18%; }
+.parallax-layer[data-layer="back"] .demo-card { width: 130px; height: 130px; }
+.parallax-layer[data-layer="mid"] .demo-card { width: 170px; height: 170px; }
+.parallax-layer[data-layer="front"] .demo-card { width: 210px; height: 210px; }
+
+@media (max-width: 640px) {
+  .parallax-layer[data-layer="back"] { left: 2%; top: 6%; }
+  .parallax-layer[data-layer="mid"] { left: 30%; top: 38%; }
+  .parallax-layer[data-layer="front"] { left: 42%; top: 68%; }
+  .parallax-layer[data-layer="back"] .demo-card { width: 110px; height: 110px; padding: 1rem; }
+  .parallax-layer[data-layer="mid"] .demo-card { width: 125px; height: 125px; padding: 1rem; }
+  .parallax-layer[data-layer="front"] .demo-card { width: 140px; height: 140px; padding: 1rem; }
+  .parallax-layer .demo-card h4 { font-size: 1rem; }
+  .parallax-layer .demo-card p { font-size: 0.68rem; }
+}
+
+/* ---------- 07 react-scroll-horizontal ---------- */
+
+.rsh-box {
+  width: min(90vw, 900px);
+  height: 60vh;
+  border-radius: 28px;
+  overflow: hidden;
+  position: relative;
+  background: rgba(0,0,0,0.15);
+}
+.rsh-track {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  gap: 2rem;
+  padding: 0 3rem;
+  will-change: transform;
+}
+
+/* ---------- 08 marquee ---------- */
+
+.marquee-wrap {
+  width: 100%;
+  overflow: hidden;
+}
+.marquee-track {
+  display: flex;
+  width: max-content;
+  gap: 3rem;
+  align-items: center;
+  animation: marquee 16s linear infinite;
+}
+.marquee-track span {
+  font-family: var(--display);
+  font-size: clamp(2.5rem, 7vw, 5rem);
+  text-transform: uppercase;
+  white-space: nowrap;
+  -webkit-text-stroke: 2px var(--white);
+  color: transparent;
+}
+.marquee-track span:nth-child(4n+1) { color: var(--pink); -webkit-text-stroke: 0; }
+@keyframes marquee {
+  to { transform: translateX(-50%); }
+}
+
+/* ---------- 09 canvas ---------- */
+
+.canvas-stage {
+  width: min(92vw, 900px);
+  height: 56vh;
+  border-radius: 28px;
+  background: rgba(0,0,0,0.18);
+  display: block;
+}
+
+/* ---------- 10 svg path ---------- */
+
+.svg-stage {
+  width: min(92vw, 900px);
+  height: 50vh;
+}
+
+/* ---------- 11 three.js ---------- */
+
+.three-stage {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+}

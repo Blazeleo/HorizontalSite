@@ -1,0 +1,228 @@
+@import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Poppins:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap');
+
+:root {
+  --blue: #2B27E7;
+  --blue-line: #7A78F5;
+  --blue-deep: #201dbd;
+  --cream: #F0F1DF;
+  --pink: #FF236D;
+  --pink-dark: #d81a5a;
+  --cyan: #66CCDE;
+  --cyan-dark: #45b3c6;
+  --yellow: #EDC010;
+  --white: #FBFDFD;
+  --ink: #111111;
+  --footer-blue-text: #3733c9;
+
+  --display: 'Archivo Black', 'Anton', 'Arial Narrow', sans-serif;
+  --sans: 'Poppins', system-ui, sans-serif;
+
+  --maxw: 1240px;
+  --pad: clamp(20px, 5vw, 64px);
+
+  --chapter-h: 100vh;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--blue);
+  scroll-behavior: auto;
+}
+
+body {
+  font-family: var(--sans);
+  color: var(--white);
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--pink);
+  color: var(--white);
+}
+
+h1, h2, h3, .display {
+  font-family: var(--display);
+  text-transform: uppercase;
+  line-height: 0.88;
+  letter-spacing: -0.01em;
+  margin: 0;
+  font-weight: 400;
+}
+
+p, .body-text {
+  font-family: var(--sans);
+  font-weight: 300;
+  line-height: 1.5;
+}
+
+code, .snippet {
+  font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
+}
+
+a { color: inherit; }
+
+/* ---------- layout scaffolding ---------- */
+
+.showcase {
+  position: relative;
+  width: 100%;
+}
+
+.section {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  padding: calc(var(--pad) + 70px) var(--pad) var(--pad);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.section.bg-blue { background: var(--blue); color: var(--white); }
+.section.bg-cream { background: var(--cream); color: var(--blue); }
+.section.bg-deep { background: var(--blue-deep); color: var(--white); }
+
+/* ---------- chapter chrome ---------- */
+
+.kicker {
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.65;
+  margin-bottom: 0.6rem;
+}
+
+.chapter-title {
+  font-size: clamp(2.4rem, 7vw, 5.2rem);
+  max-width: var(--maxw);
+}
+
+.chapter-desc {
+  max-width: 640px;
+  font-size: clamp(0.95rem, 1.3vw, 1.05rem);
+  margin-top: 1rem;
+  opacity: 0.92;
+}
+
+.chapter-head {
+  position: relative;
+  z-index: 5;
+}
+
+.chapter-body {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  margin-top: 1.25rem;
+}
+
+.chapter-footer {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+}
+
+/* metric pills */
+.metric {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  font-size: 0.72rem;
+  font-weight: 500;
+  padding: 0.4em 0.85em;
+  border-radius: 999px;
+  border: 1.5px solid currentColor;
+  opacity: 0.85;
+  white-space: nowrap;
+}
+
+.metric b { font-weight: 700; }
+
+/* Sized in em so the icon tracks the pill's own font-size, and stroked in
+   currentColor so it inverts with the label on blue and on cream alike.
+   See ChapterMeta.js for why these are outlines and not emoji. */
+.metric-icon {
+  width: 1.15em;
+  height: 1.15em;
+  flex: none;
+}
+
+.dots {
+  display: inline-flex;
+  gap: 3px;
+}
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.25;
+}
+.dot.on { opacity: 1; }
+
+/* code snippet card */
+.snippet-card {
+  font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
+  font-size: 0.72rem;
+  line-height: 1.55;
+  background: rgba(0,0,0,0.28);
+  border-radius: 14px;
+  padding: 1rem 1.2rem;
+  max-width: 480px;
+  overflow-x: auto;
+  white-space: pre;
+  backdrop-filter: blur(6px);
+}
+.section.bg-cream .snippet-card {
+  background: rgba(43, 39, 231, 0.08);
+  color: var(--blue);
+}
+
+/* buttons */
+.pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  border: none;
+  border-radius: 999px;
+  padding: 0.75em 1.5em;
+  font-family: var(--sans);
+  font-weight: 500;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+.pill-btn.pink { background: var(--pink); color: var(--white); }
+.pill-btn.pink:hover { background: var(--pink-dark); transform: scale(1.03); box-shadow: 0 8px 24px rgba(255,35,109,0.4); }
+.pill-btn.cyan { background: var(--cyan); color: var(--blue-deep); }
+.pill-btn.cyan:hover { background: var(--cyan-dark); transform: scale(1.03); box-shadow: 0 8px 24px rgba(102,204,222,0.4); }
+
+/* doodles */
+.doodle {
+  position: absolute;
+  border: 2.5px solid var(--blue-line);
+  opacity: 0.85;
+  pointer-events: none;
+}
+.section.bg-cream .doodle { border-color: rgba(43,39,231,0.25); }
+
+/* scrollbar tidy for internal galleries */
+.hide-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+}

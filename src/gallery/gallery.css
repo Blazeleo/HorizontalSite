@@ -1,0 +1,465 @@
+/* The Gallery shows one finished piece. The card track, its pinned runway, the
+   drag handler and the cursor tag all retired with the photo set — the piece at
+   /valorant/ carries those ideas itself now.
+
+   There are two builds of this section and they are not variations on one
+   layout, they are different designs for different inputs:
+
+   - PINNED (desktop, motion allowed) — the frame opens to full-bleed, the stage
+     pins, and page scroll is written straight into the piece's own scrollbar.
+     No veil, no click, no captured wheel. See Gallery.js's header for the three
+     acts and why the finale of a site about scrolling could not keep asking for
+     a click.
+   - STATIC (<=720px, or prefers-reduced-motion) — the framed, click-to-engage
+     build that shipped before, unchanged. A phone has no wheel to choreograph,
+     and the piece drops its briefing under 640px anyway (SPEC §10). */
+
+.gallery-section {
+  /* the pinned build needs this: .section's shared `overflow: hidden` would
+     clip the sticky stage out of existence */
+  min-height: auto;
+  overflow: visible;
+}
+
+.gallery-intro {
+  max-width: 680px;
+}
+
+/* ---------- shared frame ------------------------------------------------- */
+
+/* Same framing idiom as the technique demos in techniques.css (.demo-frame-box)
+   — radius, deep shadow, hairline border — sized larger because the piece
+   inside is a full layout, not a strip. Its roster is measured in vmax against
+   *this* box, so a short frame would shrink the type.
+
+   The height is measured against what is *left* of the viewport, not against
+   all of it: 220px is the chapter head plus the foot, so header, frame and
+   legend all fit on a 768px laptop. In the pinned build this is only the
+   frame's resting size — where it starts before it opens. */
+.gallery-frame {
+  position: relative;
+  width: min(94vw, 1180px);
+  height: min(calc(100vh - 220px), 780px);
+  border-radius: 28px;
+  overflow: hidden;
+  background: #0f1923;
+  border: 1.5px solid rgba(255, 255, 255, 0.22);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+}
+
+.gallery-embed {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+.gallery-frame-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.5);
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  letter-spacing: 0.06em;
+}
+
+/* ---------- pinned build ------------------------------------------------- */
+
+.gallery-cue {
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.55;
+  margin-top: 1.4rem;
+}
+
+/* Full-bleed by exactly the section's own padding, rather than by 100vw —
+   100vw counts the scrollbar and would push a horizontal overflow onto a page
+   whose gallery section has to keep `overflow: visible` for the sticky stage. */
+.gallery-runway {
+  position: relative;
+  flex: none;
+  margin: 2.5rem calc(-1 * var(--pad)) 0;
+  height: calc((1 + var(--runway-screens, 2.6)) * 100vh);
+}
+
+.gallery-pin {
+  --open: 0;
+  --scrub: 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* The approach, in one interpolation: the frame arrives at the same inset,
+   letterboxed size as every demo above it and grows into the viewport as it
+   centres, shedding its radius, border and shadow on the way. That the frame
+   *becomes* the screen is what tells the reader this section is the payoff —
+   the kicker used to have to say it. --open is written by the rAF driver and
+   reaches 1 exactly as the stage sticks, so the piece is never resized and
+   scrubbed on the same frame. */
+.gallery-pin .gallery-frame {
+  --w0: min(94vw, 1180px);
+  --h0: min(calc(100vh - 220px), 780px);
+  width: calc(var(--w0) + (100% - var(--w0)) * var(--open));
+  height: calc(var(--h0) + (100vh - var(--h0)) * var(--open));
+  border-radius: calc(28px * (1 - var(--open)));
+  border-color: rgba(255, 255, 255, calc(0.22 * (1 - var(--open))));
+  box-shadow: 0 24px 60px rgba(0, 0, 0, calc(0.35 * (1 - var(--open))));
+}
+
+/* The piece does not take the wheel — it is not even in the pointer's path
+   until the roster arrives. Every wheel event during the approach and the
+   briefing belongs to the document, all the way down, so the trap ScrollGuard
+   exists to prevent cannot form here and there is nothing to opt into. At
+   hand-off the frame takes pointer and keyboard, which is the moment it has
+   something to answer them with. */
+.gallery-pin .gallery-embed {
+  pointer-events: none;
+}
+.gallery-pin.phase-live .gallery-embed {
+  pointer-events: auto;
+}
+
+/* Once the frame is the screen, the page's own furniture is in the piece's
+   way: the wordmark lands on the roster's vertical VALORANT rail and the
+   chapter dots sit in its right margin. Both are held back for the length of
+   the stage — selected on their roles rather than on generated class names,
+   since Nav.js builds them with styled-components. The 3px scroll bar stays:
+   it is a scroll readout on a section about scrolling. */
+a[href="#top"],
+nav[aria-label="Chapter navigation"] {
+  /* on the base elements so they fade back in as well as out */
+  transition: opacity 0.4s ease;
+}
+.gallery-immersive a[href="#top"],
+.gallery-immersive nav[aria-label="Chapter navigation"] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ---------- the rail: scroll, read back as an instrument ------------------ */
+
+/* Along the top, not down the side. The first cut ran this vertically in the
+   left gutter and it was unreadable within one agent: the carousel frames are
+   hand-positioned per agent and run 62vw to 94vw wide (SPEC §2), so the middle
+   of this screen belongs to the art, and the rail's own skew readout ended up
+   sitting inside the word CYPHER. The top band is the one strip the briefing
+   reliably leaves empty — the titles sweep through the vertical centre, the
+   slide sits mid-screen, the roster arrives bottom-right — so the instrument
+   goes where it can always be read, and the picture keeps the rest. */
+.gallery-rail {
+  position: absolute;
+  left: var(--pad);
+  top: 2rem;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  width: min(46vw, 560px);
+  font-family: var(--sans);
+  color: var(--white);
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.85);
+  transition: opacity 0.45s ease, transform 0.45s ease;
+}
+
+/* Gone by hand-off — the roster puts its status line and .q-keyhint in exactly
+   this corner, and it is the piece's turn to talk. */
+.gallery-pin.phase-live .gallery-rail {
+  opacity: 0;
+  transform: translateY(-10px);
+  pointer-events: none;
+}
+
+.gallery-rail-label,
+.gallery-rail-skew,
+.gallery-skip {
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.gallery-rail-label {
+  opacity: 0.75;
+}
+
+.gallery-rail-track {
+  position: relative;
+  width: 100%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.28);
+  margin-bottom: 1.5rem; /* room for the beat labels hanging below it */
+}
+
+.gallery-rail-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 1px;
+  width: calc(var(--scrub) * 100%);
+  background: var(--pink);
+}
+
+/* Each beat lights as the playhead reaches it. Pure CSS off the same --scrub
+   the fill uses: the ramp is steep enough (12 per unit) that a beat reads as
+   on or off rather than as a slow fade, without needing a class toggle per
+   frame from React. */
+.gallery-rail-beat {
+  position: absolute;
+  top: 11px;
+  left: calc(var(--at) * 100%);
+  white-space: nowrap;
+  font-size: 0.55rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: clamp(0.28, calc((var(--scrub) - var(--at)) * 12 + 0.28), 1);
+}
+/* the last beat would run off the end of the track */
+.gallery-rail-beat:last-child {
+  transform: translateX(-100%);
+}
+.gallery-rail-beat::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: -11px;
+  width: 5px;
+  height: 5px;
+  margin: -2px 0 0 -2px;
+  border-radius: 999px;
+  background: currentColor;
+}
+.gallery-rail-beat:last-child::before {
+  left: auto;
+  right: 0;
+  margin-right: -2px;
+}
+
+.gallery-rail-foot {
+  display: flex;
+  align-items: baseline;
+  gap: 1.6rem;
+}
+
+/* The number the piece is already computing from scroll velocity and writing
+   into --skewX. Showing it is the difference between an effect that responds
+   to the reader and an effect the reader can watch themselves drive. */
+.gallery-rail-skew {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  opacity: 0.75;
+}
+.gallery-rail-skew-key {
+  opacity: 0.6;
+}
+.gallery-rail-skew-val {
+  font-variant-numeric: tabular-nums;
+  min-width: 3.2em;
+  color: var(--pink);
+  letter-spacing: 0.08em;
+}
+
+/* The piece's own "skip the line" sits inside a frame that is deliberately not
+   taking pointer events yet, so the skip lives out here — and it scrolls
+   rather than jumps, because what is being skipped is runway. */
+.gallery-skip {
+  appearance: none;
+  -webkit-appearance: none;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.35);
+  padding: 0 0 3px;
+  color: inherit;
+  font-family: inherit;
+  cursor: pointer;
+  opacity: 0.75;
+  transition: color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+}
+.gallery-skip:hover,
+.gallery-skip:focus-visible {
+  opacity: 1;
+  color: var(--pink);
+  border-color: var(--pink);
+}
+
+/* ---------- the hand-off prompt ------------------------------------------ */
+
+/* Shown for the one beat where the reader has just been handed an instrument
+   they were not using. It sits above the roster names rather than among them —
+   the names run from roughly 60% down — and it is never in the pointer's way,
+   which matters when the whole message is "move the pointer".
+
+   Styled in the piece's HUD idiom on purpose (uppercase, letterspaced, the red
+   slash, a hairline box) rather than in the site's. It is talking about what is
+   inside the frame, and a second design language laid over this screen is the
+   mistake SPEC §11 already made once with the X-ray overlay. */
+.gallery-prompt {
+  position: absolute;
+  left: 50%;
+  top: 34%;
+  z-index: 7;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.9rem 1.6rem;
+  border: 1px solid rgba(236, 232, 225, 0.22);
+  background: rgba(8, 13, 18, 0.72);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  text-align: center;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: translate(-50%, calc(-50% + 8px));
+  transition: opacity 0.45s ease, transform 0.45s ease, visibility 0.45s ease;
+}
+
+/* Only at the hand-off, and only until the reader does the thing it asks. */
+.gallery-pin.phase-live .gallery-prompt {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, -50%);
+  transition-delay: 0.55s; /* let the roster finish arriving first */
+}
+.gallery-pin.has-taken-over .gallery-prompt {
+  opacity: 0;
+  visibility: hidden;
+  transform: translate(-50%, calc(-50% - 6px));
+  transition-delay: 0s;
+}
+
+.gallery-prompt-cue {
+  font-family: var(--sans);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #ece8e1; /* --val-bone, quoted rather than imported: the piece's
+                     variables live inside the frame, not out here */
+}
+.gallery-prompt-cue::before {
+  content: "// ";
+  color: #ff4655; /* --val-red */
+}
+.gallery-prompt-sub {
+  font-family: var(--sans);
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  color: rgba(236, 232, 225, 0.62);
+}
+
+/* ---------- the exhale, once the stage lets go --------------------------- */
+
+.gallery-runway-foot {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  max-width: var(--maxw);
+  padding-top: 2.2rem;
+}
+.gallery-runway-foot p {
+  max-width: 46ch;
+  font-size: 0.85rem;
+  opacity: 0.7;
+  margin: 0;
+}
+
+/* ---------- static build (<=720px, reduced motion) ----------------------- */
+
+.gallery-stage {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+  margin-top: 2.5rem;
+}
+
+/* The wheel gate is the shared one — .scroll-guard in techniques.css, driven
+   by components/ScrollGuard.js — so this build obeys the same rule as every
+   demo above it: the page scrolls until the reader clicks in. The only thing
+   left to say here is that the engaged ring should read against the dark piece
+   rather than the light demos. */
+.gallery-frame.is-engaged {
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35), 0 0 0 2px var(--pink);
+}
+
+.gallery-stage-foot {
+  width: min(94vw, 1180px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* The intro used to explain the controls and then the foot explained them
+   again, in prose, one paragraph apart. The intro now says what the piece is;
+   the controls live here only, as a legend — three keys read faster than the
+   sentence they replaced, and on a phone they don't push the frame down. */
+.gallery-keys {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1.4rem;
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.gallery-stage-foot kbd {
+  font-family: var(--sans);
+  font-size: 0.85em;
+  border: 1px solid currentColor;
+  border-radius: 3px;
+  padding: 0.05em 0.35em;
+  margin: 0 0.1em;
+}
+
+.gallery-open {
+  font-family: var(--display);
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+  color: var(--white);
+  text-decoration: none;
+  border-bottom: 2px solid var(--pink);
+  padding-bottom: 2px;
+  white-space: nowrap;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+.gallery-open:hover {
+  color: var(--pink);
+  border-color: var(--white);
+}
+
+@media (max-width: 720px) {
+  .gallery-frame {
+    /* less chrome to clear here: the head stacks but the foot legend wraps
+       tight, and a phone has no wheel to steal, so the frame can take more */
+    height: min(calc(100vh - 160px), 560px);
+    border-radius: 18px;
+  }
+  .gallery-stage-foot {
+    justify-content: flex-start;
+    gap: 0.9rem;
+  }
+}

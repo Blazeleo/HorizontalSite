@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex, nofollow" />
+<title>VALORANT // Agent Roster</title>
+<!--
+  An original piece built on the scroll engine ported in ../qode-replica/ —
+  same damped smooth-scroll, same scrubbed GSAP master timeline, same
+  velocity-driven skew and hover-swap art system, new content and art
+  direction. See ./SPEC.md for what was reused and what changed.
+
+  Agent art and data are Riot Games' own, via valorant-api.com. Not affiliated
+  with or endorsed by Riot Games.
+
+  The roster markup is built at runtime from js/agents.js — 13 slides, 13
+  names and 13 art frames all come off one array, so nothing can drift.
+-->
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<!-- No preconnect to media.valorant-api.com: every asset this page uses is
+     vendored under assets/ (SPEC §2), so the piece renders offline and that
+     hint only opened a connection nothing ever used. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@400;700;800;900&family=Barlow:wght@400;500;600;700&display=swap" />
+<link rel="stylesheet" href="css/valorant.css" />
+</head>
+<body>
+
+<!-- left rail. Held off-screen by .q-with-intro, slid in by the closing beat.
+     The four roles are buttons, not labels: they filter the roster — see
+     js/controls.js. They were decoration in the first pass. -->
+<header id="q-header">
+  <span class="q-wordmark">Valorant</span>
+  <span class="q-tick"></span>
+  <span class="q-roles">
+    <button type="button" class="q-role" data-role="DUELIST"><b>//</b> Duelist</button>
+    <button type="button" class="q-role" data-role="INITIATOR"><b>//</b> Initiator</button>
+    <button type="button" class="q-role" data-role="CONTROLLER"><b>//</b> Controller</button>
+    <button type="button" class="q-role" data-role="SENTINEL"><b>//</b> Sentinel</button>
+  </span>
+</header>
+
+<div id="q-main-wrapper">
+
+  <div id="q-intro">
+
+    <!-- the length of the intro: 600vh of nothing, scrolled smoothly.
+         Its offset drives the master timeline's playhead. -->
+    <div id="q-scroll-vh"><div class="q-sizer"></div></div>
+
+    <section id="q-pt-1" class="q-pt">
+      <div class="q-pt-mask">
+        <h1 id="q-intro-title">
+          <span class="q-move q-1"><span class="q-skew">Defy</span> <span class="q-shadow q-front" aria-hidden="true">Defy</span> <span class="q-shadow q-back" aria-hidden="true">Defy</span> </span>
+          <span class="q-move q-2"><span class="q-skew">The</span> <span class="q-shadow q-front" aria-hidden="true">The</span> <span class="q-shadow q-back" aria-hidden="true">The</span> </span>
+          <span class="q-move q-3"><span class="q-skew">Limits</span> <span class="q-shadow q-front" aria-hidden="true">Limits</span> <span class="q-shadow q-back" aria-hidden="true">Limits</span> </span>
+          <span class="q-move q-4"><span class="q-skew">13 Agents <span class="q-mark">//</span></span> <span class="q-shadow q-front" aria-hidden="true">13 Agents <span class="q-mark">//</span></span> <span class="q-shadow q-back" aria-hidden="true">13 Agents <span class="q-mark">//</span></span> </span>
+        </h1>
+      </div>
+    </section>
+
+    <!-- carousel: slides are injected from js/agents.js. Each .q-intro-slide
+         is an invisible image holder (opacity:0, still on-screen so lazy
+         loading fires); #q-intro-canvas paints the visible transition
+         between them — see effects.js: CanvasWipe. -->
+    <section id="q-pt-2" class="q-pt">
+      <div id="q-intro-slider">
+        <div class="q-inner">
+          <div id="q-intro-slide-wrap"></div>
+          <canvas id="q-intro-canvas"></canvas>
+          <span class="q-slide-label" id="q-slide-label-live">
+            <span class="q-slide-name"></span>
+            <span class="q-slide-role"></span>
+          </span>
+          <span class="q-slide-index"></span>
+        </div>
+      </div>
+    </section>
+
+    <div id="q-intro-bg"></div>
+
+    <!-- A button, not a div: this is the only escape from a five-screen
+         briefing, and as a div it was unreachable by keyboard entirely — no
+         focus, no Enter, nothing for a screen reader to announce. -->
+    <button type="button" id="q-skip-the-line">
+      <span class="q-inner">
+        <span class="q-link-label">Skip briefing</span>
+        <span class="q-slash">//</span>
+      </span>
+    </button>
+
+    <!-- keeps the source's strokeDashoffset draw/yoyo, on an angular chevron -->
+    <div id="q-intro-scroll">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 109.1 83.9" aria-hidden="true">
+        <polyline points="2,10 46,42 2,74" />
+        <polyline points="52,10 96,42 52,74" />
+      </svg>
+    </div>
+
+  </div><!-- /#q-intro -->
+
+  <main class="q-homepage">
+    <div id="q-preview-wash"></div>
+    <div id="q-main-list">
+      <div class="q-inner q-shadows">
+        <div class="q-list-wrapper q-main">
+          <!-- roster names are injected from js/agents.js -->
+          <ul id="q-themes" class="q-list-part"></ul>
+        </div>
+      </div>
+    </div>
+  </main>
+
+</div><!-- /#q-main-wrapper -->
+
+<!-- hover art frames are injected from js/agents.js -->
+<div id="q-preview"></div>
+
+<!-- HUD scrims — a designated area behind each readout instead of it fighting
+     the agent art underneath for the same pixels. Real HUDs do this with a
+     gradient panel; see the "HUD scrims" note in css/valorant.css. -->
+<div class="q-hud-top-scrim"></div>
+
+<div class="q-hud">
+  <span class="q-corner tl"></span><span class="q-corner tr"></span>
+  <span class="q-corner bl"></span><span class="q-corner br"></span>
+</div>
+
+<!-- ambient ticker: cuts across the roster art the way a real agent-select
+     screen's HUD text does, rather than sitting off in a quiet corner -->
+<div class="q-ticker-scrim"></div>
+<div class="q-ticker">
+  <div class="q-ticker-track">
+    <span>// VALORANT AGENT ROSTER</span>
+    <span>// 13 AGENTS ACTIVE</span>
+    <span>// DUELIST</span>
+    <span>// INITIATOR</span>
+    <span>// CONTROLLER</span>
+    <span>// SENTINEL</span>
+    <span>// VALORANT AGENT ROSTER</span>
+    <span>// 13 AGENTS ACTIVE</span>
+    <span>// DUELIST</span>
+    <span>// INITIATOR</span>
+    <span>// CONTROLLER</span>
+    <span>// SENTINEL</span>
+  </div>
+</div>
+
+<!-- scroll rail — the one designated area on this screen that takes a wheel
+     notch. Everywhere else (the art, the names, the HUD) a wheel event is
+     left alone and falls straight through to whatever contains this page —
+     see js/controls.js's bindWheelSelection and the "scroll rail" note in
+     css/valorant.css. The thumb's position is written by controls.js as
+     --rail-pos on every selection change, however it happened. -->
+<div class="q-scroll-rail" aria-hidden="true">
+  <span class="q-rail-label">Scroll</span>
+  <span class="q-rail-track"><span class="q-rail-thumb"></span></span>
+</div>
+
+<!-- ambient orbit: a marker tracing the HUD frame, idle-looping. Native SVG
+     getPointAtLength, no plugin — see effects.js: OrbitMarker. -->
+<svg id="q-orbit" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+  <path id="q-orbit-path" d="M 2,2 L 98,2 L 98,98 L 2,98 Z" />
+</svg>
+<div id="q-orbit-marker"></div>
+
+<div class="q-scan"></div>
+<div class="q-status">// Agent roster <b>—</b> 13 active</div>
+
+<!-- Keyboard legend. Hidden until the intro hands off, then it is the only
+     thing on screen that says the roster does anything on click — the piece
+     had a dossier behind every name and nothing announcing it. -->
+<div class="q-keyhint" aria-hidden="true">
+  <span><kbd>⇕</kbd> Scroll <b>/</b> <kbd>←</kbd><kbd>→</kbd> Agent</span>
+  <span><kbd>Enter</kbd> Dossier</span>
+  <span><kbd>Esc</kbd> Close</span>
+</div>
+
+<div class="q-credit">Key art &amp; data © Riot Games<br />Fan project, not endorsed by Riot.</div>
+
+<!-- Agent dossier — the click-to-open view. Ported: the overlay wipe
+     (scaleX 0->1, 1.25s expo.inOut, origin 100% 0) and the --yVal yoyo kick,
+     both catalogued but never built in ../qode-replica/SPEC.md §9. New: the
+     dossier content itself and the 5 scroll-driven FX modules applied to it
+     (js/dossier.js), scrolled by a second SmoothScroll instance running in
+     horizontal mode (js/smooth-scroll.js's ported horizontalScroll plugin). -->
+<div id="q-dossier">
+  <!-- TONAL BLOCK (see css/valorant.css "dossier tonal match") — delete this
+       div and that CSS block together to revert. The roster's HUD corners are
+       painted by .q-hud at z-index 1500, which the dossier covers at 4000, so
+       the dossier lost every frame cue the roster has. This is the same four
+       corners, scoped to the panel. -->
+  <div class="q-hud q-hud-dossier" aria-hidden="true">
+    <span class="q-corner tl"></span><span class="q-corner tr"></span>
+    <span class="q-corner bl"></span><span class="q-corner br"></span>
+  </div>
+  <button id="q-dossier-close" aria-label="Close dossier">
+    <span>Close</span>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
+      <line x1="4" y1="4" x2="20" y2="20" />
+      <line x1="20" y1="4" x2="4" y2="20" />
+    </svg>
+  </button>
+  <div id="q-dossier-scroll"></div>
+</div>
+
+<script src="vendor/gsap.min.js"></script>
+<script src="js/smooth-scroll.js"></script>
+<script src="js/agents.js"></script>
+<script src="js/effects.js"></script>
+<script src="js/valorant.js"></script>
+<script src="js/dossier.js"></script>
+<script src="js/ability-rail.js"></script>
+<script src="js/controls.js"></script>
+</body>
+</html>

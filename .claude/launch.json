@@ -1,0 +1,23 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "satvik-site",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["/Users/satvik/Desktop/Projects/satvik-site/tools/serve.py"],
+      "port": 4173
+    },
+    {
+      "name": "hparallax-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "start"],
+      "port": 3000
+    },
+    {
+      "name": "hparallax-3001",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["-c", "PORT=3001 BROWSER=none npm run start"],
+      "port": 3001
+    }
+  ]
+}
