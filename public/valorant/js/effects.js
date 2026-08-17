@@ -3,117 +3,47 @@
 
    Everything in this file is original to this piece, not a port. It replaces
    the hover reveal Qode's Preview.changeImage used (a single 0.45s power4.out
-   slide-in) with two effects layered together:
+   slide-in) with LayerParallax: the portrait is its four source planes
+   (haze / motif / face / figure, from ../assets/compose-splash.py) rather
+   than one flattened image, and both the change-of-agent entrance and the
+   idle drift while an agent is selected are the same planes moving at their
+   own depth-ordered rates — arriving is just the drift with a starting
+   position, not a separate effect bolted on before it.
 
-     1. ShardReveal   — the incoming portrait assembles out of angular clip-path
-                         slices, staggered in on a HUD-scan beat. Valorant's own
-                         UI is built from bevelled diagonal panels (menus, the
-                         agent-select highlight, the buy-phase timer) — this
-                         borrows that language instead of a generic cross-fade.
+   NEW: this used to be two effects — an angular clip-path shard assembly
+   (ShardReveal) that handed off to LayerParallax once it settled. Shards
+   read as a transition; a roster where every agent used to arrive in a
+   different size and screen position (agents.js used to hand-set width/pos
+   per agent, 62vw-94vw) made that cut read rougher still. Uniform framing
+   plus one continuous parallax-driven system in its place is meant to read
+   as the portrait assembling into the same depth it idles at, not as a
+   transition effect happening to it.
 
-     2. LayerParallax  — once the shards settle, the flattened portrait is
-                         swapped for its four source planes (haze / motif /
-                         face / figure, from ../assets/compose-splash.py) and a
-                         pointer-driven rAF loop drifts them at different rates.
-                         The planes were alpha-masked identically at build time,
-                         so stacked at rest they reproduce the flattened image
-                         exactly — the swap is invisible until the pointer moves.
-
-   Both read from a single source of truth: SHARD assumes an <img> it's told to
-   slice; PARALLAX assumes the four <img class="q-layer-*"> already in the DOM
-   (see buildDOM in valorant.js). Neither one owns scheduling — Preview in
-   valorant.js sequences them.
+   LayerParallax assumes the four <img class="q-layer-*"> already in the DOM
+   (see buildDOM in valorant.js). It doesn't own scheduling — Preview in
+   valorant.js sequences it.
 --------------------------------------------------------------------------- */
 
 (function (global) {
   'use strict';
 
-  /* ---- ShardReveal --------------------------------------------------------
-     N diagonal slices of the SAME image, stacked exactly on top of each other
-     and each showing only its own clip-path window — so unlike a sprite sheet
-     or background-position trick, the slices always line up regardless of the
-     element's rendered size. */
-  var ShardReveal = {
-    N: 8,
-    SKEW: 0.09,     // fraction of width the top/bottom edges shear by
-
-    /* Builds N <img> clones inside `host`, all sourced from `src`, clipped to
-       contiguous angled bands. Kills any tweens/children left over from a
-       previous call on this host first, so re-hovering the same agent doesn't
-       leak elements or fight an in-flight timeline. */
-    build: function (host, src) {
-      gsap.killTweensOf(host.children);
-      host.innerHTML = '';
-      var shards = [];
-      for (var i = 0; i < this.N; i++) {
-        var img = document.createElement('img');
-        img.className = 'q-shard';
-        img.src = src;
-        img.alt = '';
-        img.decoding = 'async';
-        var x0 = (i / this.N) * 100;
-        var x1 = ((i + 1) / this.N) * 100;
-        var skew = this.SKEW * 100;
-        img.style.clipPath =
-          'polygon(' +
-          (x0 + skew) + '% 0%, ' + (x1 + skew) + '% 0%, ' +
-          (x1 - skew) + '% 100%, ' + (x0 - skew) + '% 100%)';
-        host.appendChild(img);
-        shards.push(img);
-      }
-      return shards;
-    },
-
-    /* Plays the assembly and resolves when it settles. Shards left of centre
-       fly in from the left, right of centre from the right, with a vertical
-       jitter that alternates per shard — a converging "scan open" rather than
-       everything arriving from one direction, which reads flatter. */
-    play: function (host, src, accent) {
-      var self = this;
-      var shards = this.build(host, src);
-      var n = shards.length;
-
-      var flash = document.createElement('div');
-      flash.className = 'q-shard-flash';
-      flash.style.background = accent || '#fff';
-      host.appendChild(flash);
-
-      return new Promise(function (resolve) {
-        gsap.timeline({ onComplete: resolve })
-          .fromTo(shards, {
-            opacity: 0,
-            x: function (i) { return ((i / (n - 1)) - 0.5) * 220; },
-            y: function (i) { return (i % 2 === 0) ? -26 : 26; },
-            scale: 1.04
-          }, {
-            opacity: 1, x: 0, y: 0, scale: 1,
-            duration: 0.55, ease: 'expo.out', stagger: 0.032
-          }, 0)
-          .fromTo(flash, { opacity: 0.5 }, { opacity: 0, duration: 0.4, ease: 'power2.out' }, 0)
-          .set(flash, { display: 'none' });
-      });
-    },
-
-    /* Quick withdrawal, not a mirror of play() — a shard *dis*assembly would
-       linger exactly when the reason for hovering away is usually "show me
-       the next one already". */
-    clear: function (host) {
-      gsap.killTweensOf(host.children);
-      gsap.to(host, {
-        duration: 0.12, opacity: 0, ease: 'power2.in',
-        onComplete: function () { host.innerHTML = ''; host.style.opacity = 1; }
-      });
-    }
-  };
-
   /* ---- LayerParallax -------------------------------------------------------
-     Drifts the four planes of the CURRENT item against the pointer. One rAF
-     loop total, not one per item — it just points at whichever item is
-     active, so hovering across the roster never accumulates loops. */
+     Drifts the four planes of the CURRENT item. One rAF loop total, not one
+     per item — it just points at whichever item is active, so scrolling
+     across the roster never accumulates loops.
+
+     NEW: this used to chase the pointer. The roster has no hover left to
+     chase (js/controls.js's scroll selection and arrow keys are the only
+     ways to change agent now — see valorant.js's Roster.prototype.select),
+     so this drifts off the *scroll* instead: js/controls.js calls kick() with
+     each tick's scroll delta as the roster's real scroll moves, and the
+     planes ease toward that velocity and spring back to rest the moment
+     scrolling stops, the same chase-and-settle shape Intro.calcDelta already
+     uses for the briefing's type skew. */
   var LayerParallax = {
     _raf: null,
     _active: null,      // the item element currently being driven
-    _target: { x: 0, y: 0 },
+    _vel: 0,             // scroll-driven velocity, decays toward 0 every tick
     _cur: { x: 0, y: 0 },
 
     // (rate, extra) per plane — background moves least, the figure and motif
@@ -125,10 +55,50 @@
       figure: { move: 30,  rot: -1.4 }
     },
 
-    _onMove: function (e) {
-      var vw = window.innerWidth, vh = window.innerHeight;
-      LayerParallax._target.x = (e.clientX / vw) * 2 - 1;   // -1..1
-      LayerParallax._target.y = (e.clientY / vh) * 2 - 1;
+    // delta: this tick's scroll change, already signed so scrolling toward
+    // the next agent reads as a positive drift. Clamped so one big flick
+    // can't fling the planes past their frame.
+    kick: function (delta) {
+      this._vel = Math.max(-1, Math.min(1, this._vel + delta * 0.05));
+    },
+
+    /* The change-of-agent transition, and the reason attach() no longer
+       needs a shard assembly to hand off from: each plane starts offset by
+       a multiple of its own RATES.move (so figure travels furthest, haze
+       barely at all — the same depth ordering the idle drift reads by) and
+       eases to rest, staggered a beat per plane back-to-front. Preview.
+       changeImage (valorant.js) calls attach() once this resolves, so the
+       entrance is the first frame of the same system the idle drift runs,
+       not a different effect bolted on before it. */
+    enter: function (item) {
+      var layerHost = item.querySelector('.q-layer-host');
+      if (!layerHost) return Promise.resolve();
+      gsap.set(layerHost, { autoAlpha: 1 });
+      var layers = layerHost.querySelectorAll('.q-layer');
+      // Killed before the new timeline starts, not just re-targeted by it —
+      // an agent re-entered before its last entrance finished (the roster
+      // loop's rebase can revisit one within a single fast scroll, see
+      // valorant.js's Preview.prototype.changeImage) would otherwise still
+      // have its previous fromTo() ticking away underneath the new one,
+      // fighting it for the same transform/opacity on every frame.
+      gsap.killTweensOf(layers);
+
+      return new Promise(function (resolve) {
+        var tl = gsap.timeline({ onComplete: resolve });
+        for (var i = 0; i < layers.length; i++) {
+          var el = layers[i];
+          var rate = LayerParallax.RATES[el.dataset.plane] || { move: 0, rot: 0 };
+          tl.fromTo(el, {
+            x: rate.move * 2.6,
+            y: rate.move * 1.3,
+            rotate: rate.rot * 3,
+            opacity: 0
+          }, {
+            x: 0, y: 0, rotate: 0, opacity: 1,
+            duration: 0.7, ease: 'power3.out'
+          }, i * 0.05);
+        }
+      });
     },
 
     attach: function (item) {
@@ -138,7 +108,6 @@
       var layerHost = item.querySelector('.q-layer-host');
       if (!layerHost) return;
       gsap.set(layerHost, { autoAlpha: 1 });
-      window.addEventListener('pointermove', this._onMove);
       this._tick();
     },
 
@@ -146,16 +115,18 @@
       if (!this._active) return;
       var layerHost = this._active.querySelector('.q-layer-host');
       if (layerHost) gsap.set(layerHost, { autoAlpha: 0 });
-      window.removeEventListener('pointermove', this._onMove);
       cancelAnimationFrame(this._raf);
       this._active = null;
+      this._vel = 0;
+      this._cur.x = this._cur.y = 0;
     },
 
     _tick: function () {
       var self = LayerParallax;
       if (!self._active) return;
-      self._cur.x += (self._target.x - self._cur.x) * 0.07;
-      self._cur.y += (self._target.y - self._cur.y) * 0.07;
+      self._vel *= 0.9;   // spring back to rest between scroll gestures
+      self._cur.x += (self._vel - self._cur.x) * 0.15;
+      self._cur.y = self._cur.x * 0.5;
 
       var layers = self._active.querySelectorAll('.q-layer');
       for (var i = 0; i < layers.length; i++) {
@@ -169,7 +140,6 @@
       self._raf = requestAnimationFrame(self._tick);
     }
   };
-  LayerParallax._onMove = LayerParallax._onMove.bind(LayerParallax);
 
   /* ---- CanvasWipe -----------------------------------------------------------
      Routes the intro carousel's slide-to-slide reveal through a <canvas>
@@ -334,7 +304,6 @@
     }
   };
 
-  global.ShardReveal = ShardReveal;
   global.LayerParallax = LayerParallax;
   global.CanvasWipe = CanvasWipe;
   global.OrbitMarker = OrbitMarker;

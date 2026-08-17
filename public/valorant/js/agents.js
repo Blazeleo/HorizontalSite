@@ -10,9 +10,13 @@
    dissolves into the page instead of ending in a rectangle.
 
    `art` is the source painted key art alone (kept as a swap-in). `mark` is
-   Riot's white-alpha name watermark. width/pos are hand-set per agent - the
-   one idea lifted straight from Qode's catalog, where every project has its
-   own frame rather than a uniform slot.
+   Riot's white-alpha name watermark. width/pos used to be hand-set per
+   agent (62vw-94vw, Qode's catalog idea, where every project gets its own
+   frame) - one agent's portrait could arrive nearly a third larger than the
+   last one's and land in a different corner, which read as a rough cut
+   rather than a roster. Uniform now: every agent gets the same frame, so
+   switching agents changes who is on screen without also changing the
+   screen.
 
    `bio` and `abilityInfo` (name/description/icon for the 4 active abilities -
    passives are excluded, not every agent has one) feed the click-to-open
@@ -37,7 +41,7 @@ window.AGENTS = [
     ],
     art: "assets/agents/brimstone.png",
     splash: "assets/splash/brimstone.webp",
-    width: "72vw", pos: "right:-4%; top:2%"
+    width: "78vw", pos: "right:-4%; top:0%"
   },
   {
     name: "VIPER", role: "CONTROLLER",
@@ -52,7 +56,7 @@ window.AGENTS = [
     ],
     art: "assets/agents/viper.png",
     splash: "assets/splash/viper.webp",
-    width: "86vw", pos: "right:-8%; top:-4%"
+    width: "78vw", pos: "right:-4%; top:0%"
   },
   {
     name: "OMEN", role: "CONTROLLER",
@@ -67,7 +71,7 @@ window.AGENTS = [
     ],
     art: "assets/agents/omen.png",
     splash: "assets/splash/omen.webp",
-    width: "92vw", pos: "right:-10%; top:-6%"
+    width: "78vw", pos: "right:-4%; top:0%"
   },
   {
     name: "KILLJOY", role: "SENTINEL",
@@ -82,7 +86,7 @@ window.AGENTS = [
     ],
     art: "assets/agents/killjoy.png",
     splash: "assets/splash/killjoy.webp",
-    width: "66vw", pos: "right:0%;  top:4%"
+    width: "78vw", pos: "right:-4%; top:0%"
   },
   {
     name: "CYPHER", role: "SENTINEL",
@@ -112,7 +116,7 @@ window.AGENTS = [
     ],
     art: "assets/agents/sova.png",
     splash: "assets/splash/sova.webp",
-    width: "84vw", pos: "right:-6%; top:-2%"
+    width: "78vw", pos: "right:-4%; top:0%"
   },
   {
     name: "SAGE", role: "SENTINEL",
@@ -127,7 +131,7 @@ window.AGENTS = [
     ],
     art: "assets/agents/sage.png",
     splash: "assets/splash/sage.webp",
-    width: "64vw", pos: "right:2%;  top:5%"
+    width: "78vw", pos: "right:-4%; top:0%"
   },
   {
     name: "PHOENIX", role: "DUELIST",
@@ -142,7 +146,7 @@ window.AGENTS = [
     ],
     art: "assets/agents/phoenix.png",
     splash: "assets/splash/phoenix.webp",
-    width: "88vw", pos: "right:-8%; top:-5%"
+    width: "78vw", pos: "right:-4%; top:0%"
   },
   {
     name: "JETT", role: "DUELIST",
@@ -157,7 +161,7 @@ window.AGENTS = [
     ],
     art: "assets/agents/jett.png",
     splash: "assets/splash/jett.webp",
-    width: "62vw", pos: "right:3%;  top:6%"
+    width: "78vw", pos: "right:-4%; top:0%"
   },
   {
     name: "REYNA", role: "DUELIST",
@@ -172,7 +176,7 @@ window.AGENTS = [
     ],
     art: "assets/agents/reyna.png",
     splash: "assets/splash/reyna.webp",
-    width: "80vw", pos: "right:-5%; top:-1%"
+    width: "78vw", pos: "right:-4%; top:0%"
   },
   {
     name: "RAZE", role: "DUELIST",
@@ -187,7 +191,7 @@ window.AGENTS = [
     ],
     art: "assets/agents/raze.png",
     splash: "assets/splash/raze.webp",
-    width: "74vw", pos: "right:-2%; top:2%"
+    width: "78vw", pos: "right:-4%; top:0%"
   },
   {
     name: "BREACH", role: "INITIATOR",
@@ -202,7 +206,7 @@ window.AGENTS = [
     ],
     art: "assets/agents/breach.png",
     splash: "assets/splash/breach.webp",
-    width: "94vw", pos: "right:-12%; top:-7%"
+    width: "78vw", pos: "right:-4%; top:0%"
   },
   {
     name: "SKYE", role: "INITIATOR",
@@ -217,6 +221,6 @@ window.AGENTS = [
     ],
     art: "assets/agents/skye.png",
     splash: "assets/splash/skye.webp",
-    width: "70vw", pos: "right:0%;  top:3%"
+    width: "78vw", pos: "right:-4%; top:0%"
   }
 ];

@@ -4,6 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="robots" content="noindex, nofollow" />
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
 <title>VALORANT // Agent Roster</title>
 <!--
   An original piece built on the scroll engine ported in ../qode-replica/ —
@@ -100,6 +101,8 @@
   </div><!-- /#q-intro -->
 
   <main class="q-homepage">
+    <!-- ambient background — see css/valorant.css's own note on #q-roster-bg -->
+    <div id="q-roster-bg" aria-hidden="true"></div>
     <div id="q-preview-wash"></div>
     <div id="q-main-list">
       <div class="q-inner q-shadows">
@@ -169,8 +172,25 @@
 
 <!-- Keyboard legend. Hidden until the intro hands off, then it is the only
      thing on screen that says the roster does anything on click — the piece
-     had a dossier behind every name and nothing announcing it. -->
-<div class="q-keyhint" aria-hidden="true">
+     had a dossier behind every name and nothing announcing it.
+
+     NEW: q-keyhint-replay is a real button, not another legend entry. The
+     briefing (#q-intro) is one-way by design — hand-off destroys its
+     scrollbar and removes it from the DOM outright (js/valorant.js's
+     switchToList) — so once you're on the roster there is no in-page state
+     that gets you back to "Defy the limits" short of a fresh load. This is
+     that fresh load, reachable without hunting for the browser's own reload
+     button — see js/controls.js's bindKeyhintReplay for what it actually
+     does, which is a plain reload standalone but something more deliberate
+     when embedded in the site's pinned Gallery runway (a scroll reset, not
+     just a reload — that page's own comment explains why a reload alone
+     isn't enough there). Dropped aria-hidden from the row for it: the row's
+     own opacity/visibility gate (css/valorant.css) already keeps the whole
+     legend out of the a11y tree until the intro hands off, which was the
+     actual point of aria-hidden here, and unlike that it doesn't also
+     swallow the one real control now living inside. -->
+<div class="q-keyhint">
+  <button type="button" class="q-keyhint-replay"><kbd>&#8635;</kbd> Replay intro</button>
   <span><kbd>⇕</kbd> Scroll <b>/</b> <kbd>←</kbd><kbd>→</kbd> Agent</span>
   <span><kbd>Enter</kbd> Dossier</span>
   <span><kbd>Esc</kbd> Close</span>

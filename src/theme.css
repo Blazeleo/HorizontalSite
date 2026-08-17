@@ -209,6 +209,14 @@ a { color: inherit; }
 .pill-btn.pink:hover { background: var(--pink-dark); transform: scale(1.03); box-shadow: 0 8px 24px rgba(255,35,109,0.4); }
 .pill-btn.cyan { background: var(--cyan); color: var(--blue-deep); }
 .pill-btn.cyan:hover { background: var(--cyan-dark); transform: scale(1.03); box-shadow: 0 8px 24px rgba(102,204,222,0.4); }
+.pill-btn.big {
+  background: var(--yellow);
+  color: var(--ink);
+  padding: 1em 2em;
+  font-size: 1rem;
+  font-weight: 700;
+}
+.pill-btn.big:hover { transform: scale(1.05); box-shadow: 0 10px 28px rgba(237,192,16,0.45); }
 
 /* doodles */
 .doodle {
