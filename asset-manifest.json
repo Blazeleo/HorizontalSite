@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/HorizontalSite/static/css/main.c2631b35.css",
+    "main.js": "/HorizontalSite/static/js/main.df528d36.js",
+    "static/js/787.6ba746e4.chunk.js": "/HorizontalSite/static/js/787.6ba746e4.chunk.js",
+    "index.html": "/HorizontalSite/index.html",
+    "main.c2631b35.css.map": "/HorizontalSite/static/css/main.c2631b35.css.map",
+    "main.df528d36.js.map": "/HorizontalSite/static/js/main.df528d36.js.map",
+    "787.6ba746e4.chunk.js.map": "/HorizontalSite/static/js/787.6ba746e4.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.c2631b35.css",
+    "static/js/main.df528d36.js"
+  ]
+}

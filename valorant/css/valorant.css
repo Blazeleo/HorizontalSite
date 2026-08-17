@@ -1,0 +1,1451 @@
+/* ---------------------------------------------------------------------------
+   VALORANT // AGENT ROSTER
+
+   Structure is the Qode catalog intro's, kept deliberately recognisable so the
+   port stays verifiable against ../qode-replica/ line for line: the same
+   rotate(-90deg) title columns, the same --skewX velocity variable, the same
+   49vmax x 27.55vmax carousel frame, the same rotated roster list.
+
+   The art direction is not Qode's. Where that page is white paper and grey
+   ghosts, this is gun-metal and chromatic aberration. Deviations from the
+   replica are marked DEVIATION.
+--------------------------------------------------------------------------- */
+
+:root {
+  --val-red:   #FF4655;
+  --val-dark:  #0F1923;
+  --val-void:  #06101a;
+  --val-bone:  #ECE8E1;
+  --val-teal:  #18E5B7;
+  --val-grey:  #768079;
+
+  /* driven from JS on hover — the live agent's colour */
+  --accent: #FF4655;
+  --accent-deep: #0F1923;
+
+  --display: 'Big Shoulders Display', 'Oswald', 'Arial Narrow', sans-serif;
+  --ui: 'Barlow', system-ui, sans-serif;
+
+  --rail: 5.5rem;
+}
+
+* { box-sizing: border-box; }
+::selection { background: var(--val-red); color: var(--val-bone); }
+
+html { font-size: 18px; }
+@media screen and (max-width: 1366px) { html { font-size: 16px; } }
+
+html, body {
+  height: 100%; width: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: var(--val-dark);
+}
+body {
+  font-family: var(--ui);
+  color: var(--val-bone);
+  isolation: isolate;
+}
+img { max-width: 100%; vertical-align: middle; }
+
+.q-abs { position: absolute; top: 0; left: 0; height: 100%; width: 100%; }
+.q-no-point { pointer-events: none; }
+.q-move { will-change: transform; }
+
+/* ---------------------------------------------------------------------------
+   Scroll surface. 900vh of nothing; its offset is the intro's clock.
+
+   Was 600vh — every wheel notch or trackpad tick was a bigger slice of
+   masterTl's progress than it needed to be, so the titles/carousel/roster
+   reveal read as a series of instant jumps rather than a scrub. Same
+   scroll input now covers less of the timeline per pixel, which is the
+   whole fix: nothing about the timeline, easing or hand-off point changed,
+   only how much physical scrolling it takes to get through it. */
+#q-scroll-vh {
+  position: absolute; top: 0; left: 0;
+  height: 100%; width: 100%;
+  overflow: hidden;
+}
+#q-scroll-vh .q-sizer { height: 900vh; }
+#q-scroll-vh .scroll-content { transform: translate3d(0, 0, 0); }
+
+/* ---------------------------------------------------------------------------
+   Intro
+--------------------------------------------------------------------------- */
+#q-intro {
+  position: fixed;
+  width: 100vw; height: 100vh;
+  z-index: 3000;
+  overflow: hidden;
+  --skewX: 0;
+  --skewY: 0;
+}
+#q-intro section {
+  position: fixed; top: 0; left: 0;
+  height: 100%; width: 100%;
+  pointer-events: none;
+}
+
+#q-intro-bg {
+  position: absolute; top: 0; left: 0;
+  height: 100%; width: 100%;
+  background:
+    radial-gradient(120% 90% at 78% 12%, rgba(255,70,85,.16), transparent 60%),
+    var(--val-dark);
+  transform-origin: 0 0;
+  z-index: -1;
+}
+/* DEVIATION: a red bar rides the closing edge of the wipe. Qode's panel just
+   leaves; Valorant's UI never moves a panel without lighting its edge. */
+#q-intro-bg::after {
+  content: '';
+  position: absolute; top: 0; right: 0;
+  width: 2px; height: 100%;
+  background: var(--val-red);
+  box-shadow: 0 0 24px 2px rgba(255, 70, 85, .55);
+}
+
+#q-pt-1 { overflow: hidden; }
+.q-pt-mask { position: absolute; top: 0; left: 0; height: 100%; width: 100%; overflow: hidden; }
+
+/* -- the four title columns ------------------------------------------------
+   Rotated -90deg, so four stacked spans read as four vertical columns and
+   their local x-axis runs up the screen. */
+#q-intro-title {
+  position: absolute;
+  left: 11%;
+  bottom: 4.5rem;
+  transform: rotate(-90deg);
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 20vmin;
+  line-height: 0.92;
+  letter-spacing: -0.01em;
+  margin: 0;
+  text-transform: uppercase;
+}
+#q-intro-title > span { display: block; position: relative; width: 100%; color: var(--val-bone); }
+
+/* start positions — the entrance tweens these to x:0 */
+#q-intro-title > span:first-child  { transform: translate3d( 120vh, 0, 0); }
+#q-intro-title > span:nth-child(2) { transform: translate3d(-120vh, 0, 0); }
+#q-intro-title > span:nth-child(3) { transform: translate3d( 140vh, 0, 0); }
+#q-intro-title > span:last-child   { transform: translate3d(-160vh, 0, 0); }
+
+#q-intro-title .q-mark {
+  display: inline-block;
+  visibility: hidden;
+  color: var(--val-red);
+}
+
+/* --skewX is the smoothed scroll velocity, written every frame by valorant.js.
+   DEVIATION: Qode lags two grey ghosts behind the face. Here the ghosts are
+   red and teal, so fast scrolling reads as channel separation rather than
+   motion blur. Same offsets, same maths. */
+#q-intro-title .q-skew {
+  display: block;
+  transform-origin: 0 0;
+  transform: skewX(calc(var(--skewX) * -.2deg)) skewY(calc(var(--skewY) * -.05deg));
+}
+#q-intro-title .q-shadow {
+  position: absolute; top: 0; left: 0;
+  z-index: -1;
+  will-change: transform;
+}
+#q-intro-title .q-shadow.q-front {
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 1px var(--val-red);
+  opacity: .85;
+  transform: translate3d(calc(var(--skewX) * 2px), calc(var(--skewY) * -2px), 0);
+}
+#q-intro-title .q-shadow.q-back {
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 1px var(--val-teal);
+  opacity: .5;
+  transform: translate3d(calc(var(--skewX) * -1px), calc(var(--skewY) * 1px), 0);
+}
+
+/* -- carousel --------------------------------------------------------------
+   Same frame geometry as the source: 49vmax x 27.55vmax, parked mostly off
+   the right edge. */
+#q-intro-slider {
+  position: absolute;
+  top: calc(50% - 13.8vmax);
+  left: calc(100% - 15vmax);
+  height: 27.55vmax;
+  width: 49vmax;
+  background-color: var(--val-void);
+  overflow: hidden;
+  visibility: hidden;
+  border: 1px solid rgba(236, 232, 225, .14);
+}
+#q-intro-slider .q-inner { height: 100%; }
+
+/* Each .q-intro-slide is an invisible image holder — never painted directly.
+   opacity:0 rather than visibility:hidden or display:none, specifically so
+   the element keeps a real, on-screen layout box and loading="lazy" still
+   fires normally; #q-intro-canvas (CanvasWipe, effects.js) is what actually
+   gets drawn. */
+#q-intro-slide-wrap { position: absolute; inset: 0; }
+#q-intro-slider .q-intro-slide {
+  position: absolute; inset: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+.q-slide-art {
+  width: 100%; height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+#q-intro-canvas {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  display: block;
+}
+
+.q-slide-label {
+  position: absolute;
+  left: 1.4rem; bottom: 1.1rem;
+  display: flex; align-items: baseline; gap: .7rem;
+  font-family: var(--display);
+  text-transform: uppercase;
+}
+.q-slide-label .q-slide-name {
+  font-size: 2.6rem; font-weight: 800; line-height: 1;
+  color: var(--val-bone);
+}
+.q-slide-label .q-slide-role {
+  font-family: var(--ui);
+  font-size: .62rem; font-weight: 600;
+  letter-spacing: .28em;
+  color: var(--val-red);
+}
+.q-slide-index {
+  position: absolute;
+  right: 1.2rem; top: 1rem;
+  font-family: var(--ui);
+  font-size: .6rem; font-weight: 600;
+  letter-spacing: .22em;
+  color: rgba(236, 232, 225, .55);
+}
+
+/* -- affordances ----------------------------------------------------------- */
+#q-intro-scroll {
+  position: fixed;
+  bottom: 1.6rem; right: 1.6rem;
+  height: 3.2vw; min-height: 30px;
+  display: flex; align-items: center;
+  z-index: 100;
+  stroke: var(--val-red);
+}
+#q-intro-scroll svg {
+  height: 100%;
+  stroke-dasharray: 430;
+  stroke-dashoffset: 430;
+  fill: transparent;
+  stroke-width: 3;
+}
+
+#q-skip-the-line {
+  position: fixed; top: 0; right: 0;
+  display: flex; align-items: center;
+  z-index: 100;
+  cursor: pointer;
+  visibility: hidden;
+  /* it is a <button> now — strip the UA chrome, keep the focus ring */
+  appearance: none; -webkit-appearance: none;
+  background: none; border: 0; padding: 0;
+}
+#q-skip-the-line:focus-visible { outline: 1px solid var(--val-teal); outline-offset: -4px; }
+#q-skip-the-line .q-inner {
+  padding: 1.5rem 1.6rem;
+  display: flex; align-items: center; gap: .5rem;
+}
+#q-skip-the-line .q-link-label {
+  font-family: var(--ui);
+  font-size: .68rem; font-weight: 600;
+  letter-spacing: .26em;
+  text-transform: uppercase;
+  color: var(--val-bone);
+}
+#q-skip-the-line .q-slash { color: var(--val-red); font-weight: 700; }
+#q-skip-the-line:hover .q-link-label { color: var(--val-red); }
+
+.q-with-intro #q-header { transform: translate3d(-100%, 0, 0); }
+#q-main-wrapper { position: absolute; top: 0; left: 0; height: 100%; width: 100%; }
+
+/* ---------------------------------------------------------------------------
+   HUD chrome — the piece's own, no Qode equivalent
+--------------------------------------------------------------------------- */
+#q-header {
+  position: fixed; top: 0; left: 0;
+  height: 100vh; width: var(--rail);
+  background: var(--val-void);
+  border-right: 1px solid rgba(255, 70, 85, .28);
+  z-index: 2000;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: space-between;
+  padding: 1.2rem 0;
+}
+#q-header .q-wordmark {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 1.15rem;
+  letter-spacing: .34em;
+  text-transform: uppercase;
+  color: var(--val-bone);
+}
+#q-header .q-tick { width: 1px; flex: 1; margin: 1rem 0; background: linear-gradient(var(--val-red), transparent); }
+#q-header .q-roles {
+  display: flex; flex-direction: column; gap: .45rem;
+  font-family: var(--ui); font-size: .5rem; font-weight: 600;
+  letter-spacing: .16em; color: var(--val-grey);
+  text-transform: uppercase;
+}
+#q-header .q-roles b { color: var(--val-red); font-weight: 700; }
+
+/* The roles are the roster's filter (js/controls.js), not a caption — they
+   have to look pressable and show which one is on. */
+#q-header .q-role {
+  appearance: none; -webkit-appearance: none;
+  background: none; border: 0; padding: 0;
+  font: inherit; letter-spacing: inherit; text-transform: inherit;
+  color: inherit; text-align: left;
+  cursor: pointer;
+  transition: color .2s ease;
+}
+#q-header .q-role:hover { color: var(--val-bone); }
+#q-header .q-role:focus-visible { outline: 1px solid var(--val-red); outline-offset: 3px; }
+#q-header .q-role.q-role-active { color: var(--val-bone); }
+#q-header .q-role.q-role-active b { color: var(--val-teal); }
+
+.q-hud { position: fixed; inset: 0; pointer-events: none; z-index: 1500; }
+.q-hud .q-corner {
+  position: absolute; width: 22px; height: 22px;
+  border: 1px solid var(--accent);
+  opacity: .55;
+  /* No border-color transition: --accent is a registered property that eases
+     on <html> now, so this would be a second lag chasing the first. The one
+     declaration there is the retint beat for everything that reads --accent. */
+}
+.q-hud .q-corner.tl { top: 14px; left: calc(var(--rail) + 14px); border-right: 0; border-bottom: 0; }
+.q-hud .q-corner.tr { top: 14px; right: 14px; border-left: 0; border-bottom: 0; }
+.q-hud .q-corner.bl { bottom: 14px; left: calc(var(--rail) + 14px); border-right: 0; border-top: 0; }
+.q-hud .q-corner.br { bottom: 14px; right: 14px; border-left: 0; border-top: 0; }
+
+/* -- HUD scrims --------------------------------------------------------------
+   Status, keyhint and credit all sit at the top of the screen, and every
+   agent's art frame (see agents.js's per-agent `pos`) reaches up into that
+   same top strip — the two were landing directly on top of one another with
+   nothing to separate them, legible against Sova's grey backdrop and
+   unreadable against Jett's white hair. This gives the text its own
+   designated area: a gradient panel behind the whole strip, the way a real
+   game HUD backs its readouts, rather than trusting every future agent's art
+   to happen to be dark enough up top. Sits above the art (z-index 1) and the
+   wash (0), below the text it backs (1500) and the ticker's own band (40). */
+.q-hud-top-scrim {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 9rem;
+  z-index: 5;
+  pointer-events: none;
+  background: linear-gradient(to bottom, rgba(6, 16, 26, .82), rgba(6, 16, 26, .35) 65%, transparent);
+}
+
+.q-status {
+  position: fixed;
+  top: 1rem; left: calc(var(--rail) + 2.4rem);
+  z-index: 1500;
+  font-family: var(--ui); font-size: .6rem; font-weight: 600;
+  letter-spacing: .26em; text-transform: uppercase;
+  color: var(--val-grey);
+  pointer-events: none;
+}
+.q-status b { color: var(--val-red); font-weight: 700; }
+
+/* Keyboard legend, under the status line. Held back until the intro hands off
+   — during the intro the only control that exists is "scroll", which the
+   chevron already covers. `q-controls-ready` is set by js/controls.js. */
+.q-keyhint {
+  position: fixed;
+  top: 2.5rem; left: calc(var(--rail) + 2.4rem);
+  z-index: 1500;
+  display: flex; gap: 1.1rem; align-items: center;
+  font-family: var(--ui); font-size: .5rem; font-weight: 600;
+  letter-spacing: .2em; text-transform: uppercase;
+  color: var(--val-grey);
+  pointer-events: none;
+  opacity: 0; visibility: hidden;
+  transition: opacity .5s ease .4s, visibility .5s ease .4s;
+}
+.q-controls-ready .q-keyhint { opacity: 1; visibility: visible; }
+
+.q-keyhint kbd {
+  font-family: var(--ui); font-size: .52rem;
+  border: 1px solid rgba(236, 232, 225, .26);
+  border-radius: 2px;
+  padding: .1rem .28rem;
+  margin-right: .18rem;
+  color: var(--val-bone);
+}
+/* the "/" between the scroll hint and the arrow-key hint — same red-separator
+   idiom as .q-status b and #q-header .q-roles b, not a new pattern */
+.q-keyhint b { color: var(--val-red); font-weight: 700; margin: 0 .1rem; }
+
+/* The one real control in this row — .q-keyhint itself is pointer-events:none
+   (it reads as a passive legend everywhere else), so this opts back in just
+   for itself rather than the whole row becoming clickable. Reloads the piece
+   (js/controls.js) to replay the briefing, since #q-intro is torn down for
+   good at hand-off and a reload is the only way back to it. Unstyled-button
+   reset (font/color/etc inherit) so it sits in the row indistinguishable from
+   the plain <span> legend entries either side of it until you actually
+   hover it — the hover state below is what tells you this one is different. */
+.q-keyhint-replay {
+  all: unset;
+  pointer-events: auto;
+  cursor: pointer;
+  font-family: inherit; font-size: inherit; font-weight: inherit;
+  letter-spacing: inherit; text-transform: inherit;
+  color: inherit;
+}
+.q-keyhint-replay:hover,
+.q-keyhint-replay:focus-visible { color: var(--val-red); }
+.q-keyhint-replay:hover kbd,
+.q-keyhint-replay:focus-visible kbd { color: var(--val-red); border-color: var(--val-red); }
+.q-keyhint-replay:focus-visible { outline: 1px solid var(--val-red); outline-offset: 2px; }
+
+/* scanlines — cheap, static, and the single most "in-client" cue available */
+
+/* -- ambient ticker ---------------------------------------------------------
+   A thin HUD band riding across the middle of the screen — over the agent
+   art, under the roster names — rather than tucked into a quiet corner where
+   an ambient touch reads as an afterthought.
+
+   Its own designated area, same idea as .q-hud-top-scrim above: a soft band
+   behind the ticker's exact line, centred on it (ticker is top:48% + 1.5rem
+   tall; 3rem here, shifted up .75rem, centres on the same line) and faded at
+   both ends so it reads as a HUD strip rather than a hard bar laid over the
+   figure it's crossing. */
+.q-ticker-scrim {
+  position: fixed;
+  top: 48%; left: var(--rail); right: 0;
+  height: 3rem;
+  transform: translateY(-.75rem);
+  z-index: 39;
+  pointer-events: none;
+  background: linear-gradient(to right, transparent, rgba(6, 16, 26, .55) 12%, rgba(6, 16, 26, .55) 88%, transparent);
+}
+
+@keyframes q-tick-left {
+  to { transform: translateX(-50%); }
+}
+.q-ticker {
+  position: fixed;
+  top: 48%; left: var(--rail); right: 0;
+  height: 1.5rem;
+  z-index: 40;
+  overflow: hidden;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+  opacity: .55;
+  mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+}
+.q-ticker-track {
+  display: flex;
+  width: max-content;
+  gap: 3rem;
+  align-items: center;
+  height: 100%;
+  animation: q-tick-left 26s linear infinite;
+}
+.q-ticker-track span {
+  font-family: var(--ui);
+  font-size: .68rem;
+  font-weight: 600;
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  color: var(--val-bone);
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------------------
+   Scroll rail — the one designated scroll surface
+   ---------------------------------------------------------------------------
+   Wheel input used to work anywhere over the roster screen the moment the
+   piece decided a gesture wasn't at an edge — art, names, HUD, all of it —
+   which made it feel like the whole screen might grab the wheel at any
+   moment. This is the one place it still does: a horizontal rail sitting in
+   the gap between the art and the names, styled like what it is. Scroll
+   anywhere else on the roster now and nothing claims it — it just falls
+   through to whatever contains this page, same as the art/names/HUD always
+   did at an edge.
+
+   The thumb's position is driven from --rail-pos (0 = first agent, 1 =
+   last), written by js/controls.js's bindRailPosition on every selection
+   change — hover, arrow keys, or a scroll on the rail itself — so it always
+   reads as "where you are," not just "where the wheel last worked." Same
+   custom-property idiom js/valorant.js already uses for --accent. */
+.q-scroll-rail {
+  position: fixed;
+  left: var(--rail); right: 0;
+  top: 60%;
+  height: 2.2rem;
+  z-index: 41;   /* above the ticker (40) and its scrim (39); below the HUD text (1500) */
+  display: flex; align-items: center; gap: 1rem;
+  padding: 0 2.4rem;
+  /* the one HUD element that has to catch the wheel, so it's the one HUD
+     element that isn't pointer-events:none */
+  pointer-events: auto;
+}
+.q-rail-label {
+  font-family: var(--ui); font-size: .58rem; font-weight: 600;
+  letter-spacing: .24em; text-transform: uppercase;
+  color: var(--val-grey);
+  white-space: nowrap;
+  transition: color .2s ease;
+}
+.q-rail-track {
+  position: relative;
+  flex: 1;
+  height: 2px;
+  background: rgba(236, 232, 225, .18);
+  transition: background .2s ease;
+}
+.q-rail-thumb {
+  position: absolute;
+  top: 50%; left: calc(var(--rail-pos, 0) * 100%);
+  width: 8%;
+  height: 4px;
+  transform: translate3d(-50%, -50%, 0);
+  background: var(--accent);
+  box-shadow: 0 0 8px 1px var(--accent);
+  transition: left .25s ease;
+}
+/* the hover state is the whole point — it's the only visible sign that this
+   band, and not the art above or the names below it, is where the wheel
+   works */
+.q-scroll-rail:hover .q-rail-track { background: rgba(236, 232, 225, .34); }
+.q-scroll-rail:hover .q-rail-label { color: var(--val-bone); }
+
+@media (max-width: 640px) {
+  .q-scroll-rail { display: none; }
+}
+
+/* -- ambient orbit -----------------------------------------------------------
+   A marker tracing the HUD frame's rectangle, idle-looping forever. Purely
+   decorative — no interaction depends on it. */
+#q-orbit {
+  position: fixed;
+  top: 0; left: var(--rail); right: 0; bottom: 0;
+  z-index: 45;
+  pointer-events: none;
+}
+#q-orbit-path { fill: none; stroke: none; }
+#q-orbit-marker {
+  position: fixed;
+  top: 0; left: 0;
+  width: 5px; height: 5px;
+  background: var(--val-red);
+  box-shadow: 0 0 10px 2px rgba(255, 70, 85, .65);
+  transform: translate3d(-50%, -50%, 0) rotate(45deg);
+  z-index: 46;
+  pointer-events: none;
+  will-change: transform;
+}
+
+@media (max-width: 640px) {
+  .q-ticker, .q-ticker-scrim, #q-orbit, #q-orbit-marker { display: none; }
+}
+
+.q-scan {
+  position: fixed; inset: 0;
+  /* Above #q-dossier (4000), and the topmost layer now. See the dossier tonal
+     match block near the end of this file — at 1600 the scanlines stopped at
+     the dossier's edge, which is most of why that screen read as a different
+     site. pointer-events: none, so nothing else changes by moving it up. */
+  pointer-events: none; z-index: 4500;
+  opacity: .35;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0) 0 2px,
+    rgba(0, 0, 0, .32) 2px 3px
+  );
+}
+
+/* top-right, opposite the status line — the bottom edge is all roster names */
+.q-credit {
+  position: fixed;
+  top: 1rem; right: 2.4rem;
+  z-index: 1500;
+  max-width: 40vw;
+  font-family: var(--ui); font-size: .5rem;
+  letter-spacing: .08em;
+  text-align: right;
+  color: rgba(118, 128, 121, .8);
+  pointer-events: none;
+}
+
+/* ---------------------------------------------------------------------------
+   Roster — Qode's rotated list, unchanged in mechanism
+--------------------------------------------------------------------------- */
+.q-homepage { width: 100%; }
+.q-list-wrapper:first-child { transform-origin: 0 0; }
+
+#q-main-list {
+  position: relative;
+  width: 100vh; height: 100vw;
+  z-index: 100;
+  transform: rotate(-90deg) translateX(-100%) translateZ(0);
+  transform-origin: 0 0;
+}
+/* DEVIATION: Qode blends its dark names into white paper with soft-light.
+   On a gun-metal page that would erase them, so the names use difference
+   instead — bone on the dark plate, inverted where they cross a lit portrait.
+   Same intent (names living inside the art), opposite polarity. */
+#q-main-list.q-blend { mix-blend-mode: difference; }
+#q-main-list > .q-inner { --yVal: 0; }
+#q-main-list > .q-inner:not(.q-shadows) .q-shadow { display: none; }
+
+/* The roster used to be sized to fit all 13 names on screen at once, with
+   nothing to scroll. It's a real scroll surface now, but NOT a native
+   overflow one — a first pass tried overflow-y:auto here and a genuine wheel
+   gesture over it did nothing at all. This axis is rotated -90deg (the whole
+   point of the "Qode rotated list": vertical pre-rotation reads as horizontal
+   once it lands), and a rotated element's scroll hit-testing/direction
+   mapping is exactly the kind of thing real browsers get unreliable about —
+   which is almost certainly why the original build reached for hover instead
+   of scroll here in the first place.
+
+   So js/controls.js's bindRosterScroll drives this with js/smooth-scroll.js's
+   SmoothScroll instead — the same engine the intro already uses. It never
+   touches native overflow: it wraps this element's children in its own
+   `.scroll-content` div and animates that div's transform straight off raw
+   wheel events, which sidesteps the rotated-scroll-container problem
+   entirely rather than fighting it. This rule is now just the clipping
+   viewport SmoothScroll transforms inside; `.scroll-content` below carries
+   the layout (flex column, padding) `.q-list-part` used to own directly. */
+#q-main-list .q-list-part {
+  height: 100vw;
+  overflow: hidden;
+  /* the briefing's own velocity skew (--yVal), unrelated to and unaffected
+     by the scroll-content transform below — this is always back at 0 by the
+     time the roster is interactive (Intro.prototype.finishTimeline zeroes it
+     on hand-off), so it only ever does anything during the briefing itself,
+     same as before this element also became a scroll viewport. */
+  transform: skewY(calc(var(--yVal) * .1deg)) translateZ(0);
+  transform-origin: 50% 100%;
+}
+/* The padding lives here, not on the viewport above — clientHeight (the
+   viewport's box, padding included) has to stay smaller than contentEl's
+   offsetHeight or SmoothScroll's limit.y computes to 0 and nothing ever
+   scrolls (found the hard way: padding-bottom used to sit on the viewport
+   itself, inflating exactly the number it needed to stay under).
+
+   No padding-bottom any more, deliberately — this used to carry a fixed vw
+   guess at how much blank scroll room to leave past Skye for pick()'s focus
+   line (a third of the way into the viewport) to ever reach her centre. A
+   fixed guess can't be right for every viewport, and on at least one real
+   screen it measured short, which is what js/controls.js's "the loop" note
+   explains. There's real content past Skye now instead of a padding guess —
+   a full echoed pass of the roster (js/valorant.js's buildDOM) — so however
+   tall the viewport is, there is always more list to scroll into. */
+#q-main-list .q-list-part .scroll-content {
+  display: flex; flex-direction: column;
+  padding-left: 1.5rem;
+  padding-top: calc(var(--rail) + 1.4rem);
+  will-change: transform;
+}
+
+/* -- the loop's echoes (js/valorant.js's buildDOM) --------------------------
+   Two more full passes through the roster bracketing the real one — after
+   Skye, and (via order:-1) before Brimstone — so scrolling either direction
+   always has real, correctly-sized content to move into rather than a
+   padding guess. Non-interactive: js/controls.js's bindRosterScrollDesktop
+   is the only thing that ever reads them, to know when to rebase the scroll
+   position back onto the pixel-identical real agent. */
+.q-theme-echo { pointer-events: none; }
+.q-theme-echo-lead,
+.q-roster-loop-lead { order: -1; }
+
+.q-theme { position: relative; }
+.q-theme .q-col {
+  display: inline-block; white-space: nowrap;
+  will-change: transform, opacity; pointer-events: none;
+  transition: opacity .3s ease;
+}
+
+/* -- the loop's demarcation (js/controls.js's bindRosterScrollDesktop) -----
+   A divider, not a `.q-theme` — not selectable, never becomes "the current
+   agent" (selectable()/nearestAgent() in controls.js both key off that
+   class). Structured like .q-theme's own .q-col so it inherits the same
+   "reads upright in the rotated list" behaviour rather than reinventing it. */
+.q-roster-loop {
+  display: inline-flex;
+  align-items: center;
+  gap: 1.1rem;
+  padding: 0 3rem;
+  opacity: .5;
+}
+.q-roster-loop-line {
+  width: 2.6rem;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--val-bone));
+}
+.q-roster-loop-line + .q-roster-loop-label + .q-roster-loop-line {
+  background: linear-gradient(to left, transparent, var(--val-bone));
+}
+.q-roster-loop-label {
+  font-family: var(--ui);
+  font-size: .58rem;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 1.5;
+  color: var(--val-bone);
+  white-space: nowrap;
+}
+
+/* Dimmed by a role filter. The fade lands on .q-col rather than on the name's
+   colour or on .q-inner: the colour carries the hover beat (.15s .4s) and
+   would make filtering feel half a second late, and .q-inner's opacity is
+   written inline by GSAP for the reveal and the dossier. */
+.q-theme.q-dim .q-col { opacity: .1; }
+.q-theme.q-dim .q-home-to-single { pointer-events: none; }
+.q-theme.q-dim .q-theme-tagline { opacity: 0; }
+
+/* Focus. Thirteen names at full weight sit on top of a full-bleed portrait and
+   all compete with it and with each other, so hovering changed the colour of
+   one word and nothing else moved. Stepping the rest back gives the hovered
+   name — and the art it is standing on — somewhere to be.
+
+   Same reasoning as the filter dim above: it lands on .q-col, not on the
+   name's colour, which carries the .15s .4s hover beat and would make this
+   arrive half a second after the pointer. .q-dim is excluded so a role filter
+   still reads as the stronger state instead of being softened to .55.
+   :has() is the whole mechanism — no JS, and browsers without it simply keep
+   the previous flat roster. */
+#q-themes:has(.q-theme.q-hover) .q-theme:not(.q-hover):not(.q-dim) .q-col {
+  opacity: .55;
+}
+.q-theme .q-theme-title {
+  position: relative; display: inline-block;
+  margin: 0 1vw 0 0;
+  font-family: var(--display);
+  font-weight: 800;
+  /* The rotated list lays 13 names across the screen, and each one occupies a
+     line-height of width — so the whole roster is 13 * 1.16em wide. Qode's
+     original sits right on the edge of overflowing at 13 items; this ties the
+     size to the space actually available so it cannot clip, whatever the
+     aspect ratio (and it is rendered inside an iframe on the main site, where
+     the viewport is not the window). */
+  font-size: min(5.6vmax, calc((100vw - var(--rail) - 4rem) / 15.08));
+  line-height: 1.16;
+  letter-spacing: -0.005em;
+  text-transform: uppercase;
+  color: var(--val-bone);
+  transition: color .15s .4s;
+}
+.q-theme .q-shadow { position: absolute; top: 0; left: 0; z-index: -1; will-change: transform; }
+.q-theme .q-shadow.q-front {
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 1px var(--val-red);
+  opacity: .5;
+  transform: translate3d(0, calc(var(--yVal) * -4px), 0);
+}
+.q-theme .q-shadow.q-back {
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 1px var(--val-teal);
+  opacity: .32;
+  transform: translate3d(0, calc(var(--yVal) * -2px), 0);
+}
+.q-theme > .q-inner { position: relative; display: inline-block; visibility: hidden; }
+.q-theme .q-home-to-single { z-index: 100; cursor: pointer; }
+
+/* hovered agent takes the accent */
+.q-theme.q-hover .q-theme-title { color: var(--val-red); }
+
+/* -- tagline marquee (ROLE — ability · ability · ...) -----------------------
+   The list is rotated -90deg, so this element's CSS *width* is what runs up
+   the screen. Left to shrink-wrap its nowrap content it measured 685px on a
+   900px viewport — 76% of the screen height, climbing well past the name it
+   belongs to. It is clamped to a third of that now.
+
+   Clamping the window is why the animation had to change. The old version ran
+   two copies of the text against each other (.q-lead at -3.5s, .q-follow at 0,
+   both translateX(100%) -> -100%), which tiles seamlessly only while the
+   window is exactly as wide as the content — shorten the window and the two
+   copies separate, leaving a visible hole. This is the same seamless idiom
+   .q-ticker-track uses further up: one track, content duplicated inside it,
+   translateX(-50%). The second copy starts exactly where the first ends, so
+   there is no seam at any window width. */
+@keyframes qMarquee {
+  to { transform: translateX(-50%); }
+}
+.q-theme.q-hover .q-theme-tagline { opacity: 1; }
+.q-theme-tagline {
+  position: absolute; left: .35vw; bottom: -.1vw;
+  width: 32vh;                 /* reads as height on screen — see above */
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity .2s cubic-bezier(.215, .61, .355, 1);
+  margin: 0;
+  font-family: var(--ui);
+  font-size: .78rem; font-weight: 600;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--val-red);
+  white-space: nowrap;
+  will-change: opacity;
+  mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
+}
+.q-theme-tagline .q-tag-track {
+  display: flex;
+  width: max-content;
+  animation: qMarquee 11s linear infinite;
+}
+.q-theme-tagline .q-tag-track > span { display: block; white-space: nowrap; }
+.q-theme-tagline .q-tag-track > span:after { content: '//'; margin: 0 .6rem; opacity: .6; }
+
+/* ---------------------------------------------------------------------------
+   Selection preview — full-body agent art. Sits behind the roster so the
+   names blend into it. Every agent now shares one frame (js/agents.js —
+   width/pos used to be hand-set per agent, which made switching agents also
+   jump-cut the frame size and position around the screen).
+--------------------------------------------------------------------------- */
+#q-preview {
+  position: fixed; top: 0; left: 0;
+  height: 100%; width: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+#q-preview .q-preview-item {
+  visibility: hidden;
+  position: absolute;
+  /* width + anchor come from agents.js as inline styles — the same 78vw
+     frame for every agent now. The splash's own vignette stops it from
+     looking like a photo pasted over the layout.
+
+     Its child is absolutely positioned (the four layer planes have to be,
+     to stack), so nothing in flow sets this box's height any more — pin it
+     to the composed art's own ratio (1400x788, see compose-splash.py)
+     instead. */
+  aspect-ratio: 1400 / 788;
+}
+
+/* -- layer parallax (effects.js: LayerParallax) -----------------------------
+   The four source planes. Hidden until LayerParallax.enter() assembles them
+   in on a change of agent; every plane is full-bleed and pixel-aligned by
+   construction (see compose-splash.py's shared mask), so at rest they
+   reproduce the flattened image they replace. */
+.q-layer-host {
+  position: absolute; inset: 0;
+  opacity: 0; visibility: hidden;
+}
+.q-layer {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  display: block;
+  will-change: transform;
+}
+/* agent wash behind the portrait — and what you still see before the art
+   decodes. `transition: background` was doing nothing here: a radial-gradient
+   is not an interpolable value, so the wash's colour snapped to the new agent
+   while its opacity eased, which read as a flash rather than a change.
+
+   Registering --accent as an actual colour is what makes it animate. The
+   transition then lives on <html>, where js/valorant.js writes the property,
+   and everything downstream of it — this gradient, the rail card border, the
+   dossier eyebrow — crossfades together off the one declaration. Browsers
+   without @property ignore both rules and get today's instant swap. */
+@property --accent {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #FF4655;
+}
+/* .15s after a .4s hold — the source's hover beat, the same one the roster
+   name's colour uses. SPEC §1 already claimed the corners and the wash retint
+   on this beat; until --accent could animate, nothing actually did. */
+html { transition: --accent .15s ease .4s; }
+
+/* ---------------------------------------------------------------------------
+   Roster ambient background — NEW, not a port. The agent portrait
+   (#q-preview) and the --accent wash (#q-preview-wash, below) both only
+   cover part of the frame; anywhere neither reaches was just var(--val-dark)
+   flat, which is most of the screen once nothing is selected. This is the
+   piece's own visual language — the red/teal duo, angled panel lines, a fine
+   grid — doing the job Valorant's own agent-select background does: texture
+   behind the roster instead of a plate. z-index:-1 relative to body's own
+   isolate (see html/body rules near the top of this file) keeps it below
+   everything the roster actually needs read, including #q-preview-wash and
+   the portrait itself; #q-intro sits at z-index 3000 over all of it, so this
+   is simply never visible during the briefing — no separate gating needed. */
+#q-roster-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  /* Isolated deliberately — found the hard way. #q-main-list.q-blend runs
+     mix-blend-mode:difference against everything painted behind it (the
+     "bone on dark plate" trick this file's Roster CSS note describes) —
+     without isolation, this layer's own gradients become part of what that
+     difference maths against pixel-by-pixel instead of a settled backdrop,
+     and the roster names + portrait effectively vanish. Isolating gives
+     mix-blend-mode a single flattened layer to read here instead of
+     reaching into this element's own internal blending. */
+  isolation: isolate;
+  background:
+    radial-gradient(58% 48% at 6% 2%, rgba(255, 70, 85, .17), transparent 60%),
+    radial-gradient(62% 52% at 97% 96%, rgba(24, 229, 183, .13), transparent 62%),
+    repeating-linear-gradient(115deg, rgba(236, 232, 225, .035) 0 1px, transparent 1px 88px),
+    repeating-linear-gradient(25deg, rgba(236, 232, 225, .028) 0 1px, transparent 1px 120px),
+    var(--val-dark);
+}
+/* a fine dot lattice — cheap texture, one tiled radial-gradient rather than
+   an image */
+#q-roster-bg::before {
+  content: '';
+  position: absolute; inset: 0;
+  opacity: .55;
+  background-image: radial-gradient(rgba(236, 232, 225, .05) 1px, transparent 1px);
+  background-size: 42px 42px;
+}
+/* vignette — the texture above is busiest at the edges, so this keeps the
+   centre (where the roster's own type and art already are) the thing a
+   reader's eye actually lands on */
+#q-roster-bg::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(120% 90% at 50% 45%, transparent 45%, rgba(6, 16, 26, .78) 100%);
+}
+
+#q-preview-wash {
+  position: fixed; inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(78% 70% at 72% 60%, var(--accent) 0%, transparent 62%);
+  opacity: 0;
+  transition: opacity .5s ease;
+}
+#q-preview-wash.on { opacity: .5; }
+
+/* Qode drops its preview below 1024px because the catalog switches to a
+   stacked mobile layout there. This piece keeps the rotated roster all the way
+   down, and it is rendered inside an iframe on the main site where the
+   viewport is routinely narrower than 1024 — so the art has to survive well
+   past that. See the phone layout at the end of this file for what happens
+   below 640, where the rotated list stops working at all. */
+@media (max-width: 640px) {
+  .q-hud, .q-hud-top-scrim, .q-status, .q-keyhint { display: none; }
+  :root { --rail: 3rem; }
+}
+
+/* ---------------------------------------------------------------------------
+   Agent dossier — see js/dossier.js for the transition beats this ports.
+--------------------------------------------------------------------------- */
+#q-dossier {
+  position: fixed; inset: 0;
+  z-index: 4000;
+  background: var(--val-dark);
+  visibility: hidden;
+  transform: scaleX(0);
+  transform-origin: 100% 0;
+}
+/* ::before (paints behind #q-dossier-close/.q-hud-dossier/#q-dossier-scroll,
+   which are all real children painting after it) rather than ::after, which
+   would paint over them instead. A soft --accent glow — the same live colour
+   the roster already retints per agent — ties the whole panel together under
+   whichever specific backdrop .q-dossier-section::before is showing on the
+   section currently in view. */
+#q-dossier::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(55% 60% at 100% 0%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 70%),
+    radial-gradient(45% 50% at 0% 100%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 70%);
+}
+#q-dossier-close {
+  position: absolute; top: 0; right: 0;
+  z-index: 10;
+  display: flex; align-items: center; gap: .6rem;
+  padding: 1.6rem 1.8rem;
+  background: none; border: none;
+  cursor: pointer;
+  font-family: var(--ui);
+  font-size: .68rem; font-weight: 600;
+  letter-spacing: .26em; text-transform: uppercase;
+  color: var(--val-bone);
+}
+#q-dossier-close svg { width: .7rem; height: .7rem; stroke: currentColor; stroke-width: 2; }
+#q-dossier-close:hover { color: var(--val-red); }
+
+#q-dossier-scroll {
+  position: absolute; inset: 0;
+  height: 100%; width: 100%;
+}
+#q-dossier-scroll > .scroll-content {
+  display: flex;
+  height: 100%; width: 500%;
+}
+
+.q-dossier-section {
+  position: relative;
+  width: 20%; height: 100%;
+  flex-shrink: 0;
+  overflow: hidden;
+  display: flex; flex-direction: column; justify-content: center;
+  padding: 0 8vw;
+  background-size: cover;
+  background-position: center;
+}
+/* NEW: every dossier panel used to be var(--val-dark) flat everywhere its own
+   foreground content (the bio's key art, an ability's clip) didn't reach —
+   most of the screen, on a wide viewport. js/dossier.js sets each section's
+   own background-image (the agent's splash for the bio panel, that specific
+   ability's own clip poster for the rest — already-vendored art, nothing
+   fetched new); this pseudo-element is what actually turns it into an
+   ambient backdrop rather than a sharp competing image. background:inherit
+   pulls the section's own background-image in rather than needing it
+   written twice; inset:-6% + scale gives the blur radius room so its own
+   edges don't show; the inset box-shadow is the vignette, in one layer
+   instead of a second overlapping one (which would have to paint *after*
+   this element to sit on top of it, and then would sit on top of the real
+   foreground content too). Plain content — .q-dossier-bio-copy, .q-ability-copy,
+   .q-ability-clip-wrap — all sit at z-index:2+ already and are unaffected. */
+.q-dossier-section::before {
+  content: '';
+  position: absolute;
+  inset: -6%;
+  z-index: 0;
+  background: inherit;
+  /* was brightness(.42) — on a splash portrait (the bio panel) that still read
+     as an image; on an ability's own clip poster, most of which are daylight
+     map screenshots with a lot of grey/tan in them already, .42 plus the
+     vignette below crushed it to a flat near-black rectangle. .58 keeps the
+     backdrop clearly subordinate to the foreground copy/clip (the whole point
+     of blurring it in the first place) while actually reading as *that*
+     screenshot instead of as empty panel. */
+  filter: blur(48px) brightness(.58) saturate(1.15);
+  transform: scale(1.08);
+  /* min()-capped, not a flat vw value — a narrower dossier panel (this
+     scales with the viewport the piece is rendered at, which on the main
+     site is an iframe, not the window) was measured turning this vignette
+     so large it painted flat var(--val-dark) over the entire section,
+     hiding the blurred image underneath it entirely rather than framing it.
+     Brought down from 9vw/3vw alongside the brightness bump above — the old
+     radius alone was enough to eat the lightened image back to black near
+     the edges, which is most of an ability panel at typical viewport sizes. */
+  box-shadow: inset 0 0 min(6vw, 4.5rem) min(1.6vw, 1.2rem) var(--val-dark);
+}
+
+/* -- section 0: bio, carries the 'layered' FX on its background figure --- */
+.q-dossier-bio-copy { position: relative; z-index: 2; max-width: 34rem; }
+.q-dossier-bg {
+  position: absolute;
+  right: 2%;
+  /* Anchored on the bottom edge, NOT centred with translateY(-50%).
+     DossierFX ('layered') writes this element's transform outright every frame
+     the dossier scrolls, so any transform used for layout here is destroyed the
+     moment you move — the figure used to be centred by one and slid off the
+     panel as soon as it was. Anchoring in `bottom` makes the FX drift additive
+     to a resting position instead of fighting for the same property. */
+  bottom: -4%;
+  height: 92%;
+  width: auto;
+  /* the base `img { max-width: 100% }` was clamping this to the viewport while
+     height drove it past that, squashing the figure to ~64% of its true width */
+  max-width: none;
+  opacity: .3;
+  z-index: 1;
+  pointer-events: none;
+}
+.q-dossier-eyebrow {
+  display: block;
+  font-family: var(--ui); font-size: .68rem; font-weight: 600;
+  letter-spacing: .3em; text-transform: uppercase;
+  color: var(--val-red);
+  margin-bottom: .8rem;
+}
+.q-dossier-name {
+  font-family: var(--display); font-weight: 900;
+  font-size: clamp(2.6rem, 6vw, 5rem);
+  line-height: .92;
+  text-transform: uppercase;
+  color: var(--val-bone);
+  margin: 0 0 .3rem;
+}
+.q-dossier-role {
+  display: block;
+  font-family: var(--ui); font-size: .72rem; font-weight: 700;
+  letter-spacing: .28em; text-transform: uppercase;
+  margin-bottom: 1.6rem;
+}
+.q-dossier-bio-text {
+  font-family: var(--ui); font-size: 1rem; line-height: 1.7;
+  color: rgba(236, 232, 225, .82);
+  max-width: 30rem;
+  margin: 0 0 2rem;
+}
+.q-dossier-hint {
+  display: block;
+  font-family: var(--ui); font-size: .62rem; font-weight: 600;
+  letter-spacing: .22em; text-transform: uppercase;
+  color: var(--val-grey);
+}
+
+/* -- ability rail (js/ability-rail.js) -------------------------------------
+   Native scroll-snap plus a pointer-drag flick — the two techniques the
+   retired filmstrip carried, moved somewhere they do a job: pick an ability,
+   and the dossier scrolls to it. */
+.q-rail {
+  margin: 1.6rem 0 1.4rem;
+  max-width: 30rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  cursor: grab;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  /* the rail is wider than its column; without this it ends in a hard cut that
+     reads as clipping rather than as "there is more this way" */
+  mask-image: linear-gradient(to right, black 84%, transparent);
+  -webkit-mask-image: linear-gradient(to right, black 84%, transparent);
+}
+.q-rail::-webkit-scrollbar { display: none; }
+.q-rail.q-rail-dragging { cursor: grabbing; scroll-snap-type: none; }
+
+.q-rail-track { display: flex; gap: .6rem; width: max-content; }
+
+.q-rail-card {
+  position: relative;
+  flex: 0 0 auto;
+  width: 9.5rem;
+  aspect-ratio: 16 / 9;
+  padding: 0;
+  scroll-snap-align: start;
+  overflow: hidden;
+  cursor: pointer;
+  background: var(--val-void);
+  border: 1px solid rgba(236, 232, 225, .16);
+  opacity: .55;
+  filter: saturate(.6);
+  transition: opacity .3s ease, filter .3s ease, border-color .3s ease;
+}
+.q-rail-shot {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+.q-rail-key {
+  position: absolute; top: .3rem; left: .35rem;
+  font-family: var(--ui); font-size: .5rem; font-weight: 700;
+  letter-spacing: .1em;
+  padding: .05rem .28rem;
+  color: var(--val-bone);
+  background: rgba(6, 16, 26, .8);
+  border: 1px solid rgba(236, 232, 225, .25);
+}
+.q-rail-name {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  padding: .5rem .45rem .35rem;
+  font-family: var(--ui); font-size: .5rem; font-weight: 700;
+  letter-spacing: .12em; text-transform: uppercase;
+  text-align: left;
+  color: var(--val-bone);
+  background: linear-gradient(to top, rgba(6, 16, 26, .92), transparent);
+}
+.q-rail-card.q-rail-active {
+  opacity: 1;
+  filter: saturate(1);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+/* -- ability sections ------------------------------------------------------
+   The hero is Riot's own showcase footage for the ability (vendored by
+   assets/fetch-ability-clips.py); the line-art icon it replaced is kept as a
+   badge on the name, where it still reads as the in-game glyph. */
+/* Copy left, footage right. Stacked (the first pass) the clip sat alone at the
+   top and the text alone at the bottom with the middle of a 1440px panel empty
+   between them — row-reverse reads the markup in place (clip first, because
+   that is the element data-fx is on) and lays it out the other way round. */
+.q-dossier-ability {
+  flex-direction: row-reverse;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4vw;
+}
+.q-ability-copy { max-width: 26rem; }
+.q-ability-clip-wrap {
+  position: relative;
+  flex: 0 0 auto;
+  width: min(30rem, 38vw);
+  aspect-ratio: 16 / 9;
+  margin-bottom: 1.8rem;
+  overflow: hidden;
+  border: 1px solid rgba(255, 70, 85, .4);
+  background: var(--val-void);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, .45);
+  /* DossierFX sets a transform directly (inline style, wins over this) for
+     'rail'/'vertical'; for 'text'/'rotate' it instead writes --xText/--rotate
+     as custom properties on this same element, which this rule consumes —
+     both live here because that's what data-fx is on. */
+  transform:
+    translateX(calc(var(--xText, 0) * 40px))
+    rotate(calc(var(--rotate, 0) * 10deg));
+}
+.q-ability-clip {
+  width: 100%; height: 100%;
+  display: block;
+  object-fit: cover;
+}
+.q-ability-copy { position: relative; z-index: 2; }
+.q-ability-badge {
+  width: 1.5em; height: 1.5em;
+  object-fit: contain;
+  vertical-align: -.28em;
+  margin-right: .5rem;
+  opacity: .9;
+}
+.q-ability-index {
+  font-family: var(--ui); font-size: .62rem; font-weight: 600;
+  letter-spacing: .24em;
+  color: var(--val-grey);
+  margin-bottom: .6rem;
+}
+.q-ability-name {
+  font-family: var(--display); font-weight: 800;
+  font-size: clamp(1.8rem, 3.4vw, 2.8rem);
+  text-transform: uppercase;
+  color: var(--val-bone);
+  margin: 0 0 1rem;
+}
+.q-ability-desc {
+  font-family: var(--ui); font-size: .95rem; line-height: 1.6;
+  color: rgba(236, 232, 225, .78);
+  max-width: 26rem;
+}
+
+/* ===========================================================================
+   DOSSIER TONAL MATCH — revertable
+
+   Delete this whole block, the .q-hud-dossier div in index.html, and put
+   .q-scan's z-index back to 1600, and the dossier returns exactly to how it
+   was. Nothing else depends on any of it.
+
+   The problem it solves: the roster is loud — HUD corners, scanlines, a
+   ticker, chromatic ghosting, a live per-agent accent. The dossier is an
+   opaque panel at z-index 4000 painted over all of that, so it lost every one
+   of those cues at once and read as a different, much quieter website. The
+   fix is not new decoration; it is letting the chrome the piece already has
+   reach the second screen, and giving --accent something to do once it is
+   there.
+   =========================================================================== */
+
+/* The corners, scoped to the panel. Geometry is inherited from .q-hud .q-corner
+   above; only the positioning changes, because there is no left rail here. */
+.q-hud-dossier { position: absolute; z-index: 6; }
+.q-hud-dossier .q-corner.tl { left: 14px; }
+.q-hud-dossier .q-corner.bl { left: 14px; }
+
+/* --accent is written on <html> by the roster (js/valorant.js), so it is still
+   the hovered agent's colour when their dossier opens. It was reaching exactly
+   one thing in here — the active rail card — which is why 13 visually distinct
+   agents all produced the same grey room. */
+.q-dossier-eyebrow { color: var(--accent); }
+.q-ability-index { color: var(--accent); }
+.q-ability-badge { opacity: 1; }
+
+/* A hairline in the agent's colour under the ability index, echoing the red
+   edge bar on #q-intro-bg — Valorant's UI never moves a panel without lighting
+   its edge, and this is the dossier's version of that. */
+.q-ability-copy::before {
+  content: '';
+  position: absolute;
+  left: 0; top: -1.1rem;
+  width: 2.2rem; height: 2px;
+  background: var(--accent);
+  box-shadow: 0 0 12px 1px var(--accent);
+  opacity: .9;
+}
+
+/* Centred rather than biased to whichever side the copy lands on — row-reverse
+   puts the clip left/copy right on desktop but the phone layout below stacks
+   them, so a side-anchored glow would be wrong half the time. Sits above the
+   shared blurred backdrop (z-index 1, backdrop is 0) and below the clip/copy
+   (both 2+), so it reads as ambient light in the gap between them rather than
+   competing with either — the thing the brightened backdrop above still
+   leaves this panel short of, since a map screenshot has no reason to carry
+   the agent's own colour the way their splash art does on the bio panel. */
+.q-dossier-ability::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(55% 65% at 50% 50%,
+    color-mix(in srgb, var(--accent) 20%, transparent), transparent 72%);
+}
+
+/* ---------------------------------------------------------------------------
+   Phone layout (<= 640px)
+
+   Everything above this point assumes the rotated roster: 13 names laid across
+   the screen with art behind them. At 390px that layout does not degrade, it
+   fails — the names collapse into an unreadable band on the bottom edge, and
+   the art, the HUD and the dossier were all switched off, leaving most of the
+   screen empty. So the roster stands upright here instead: an ordinary tappable
+   list, with the same agent art behind it and the same dossier (stacked
+   vertically, ability clips and rail included) behind a tap.
+
+   Nothing below changes desktop. The blend mode, the rotation and the
+   scroll-velocity skew are all desktop ideas that have nothing to drive them
+   on a phone, and are unwound rather than left running.
+--------------------------------------------------------------------------- */
+@media (max-width: 640px) {
+  /* The role filter comes out of the rail and runs across the top. At 3rem the
+     rail is narrower than the words, so left in place they were sliced off at
+     the screen edge — and they are controls now, not a caption. Positioned
+     against #q-header rather than the viewport on purpose: the rail carries a
+     transform (it slides in on hand-off), which makes it the containing block
+     for anything fixed inside it anyway. */
+  #q-header .q-roles {
+    position: absolute;
+    top: .5rem; left: var(--rail);
+    width: calc(100vw - var(--rail));
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: .75rem;
+    padding: 0 .9rem;
+    font-size: .46rem;
+  }
+  #q-header { justify-content: flex-start; padding-top: 2.2rem; }
+  #q-header .q-tick { margin-bottom: 2rem; }
+
+  /* The loop is desktop-only (js/controls.js's bindRosterScrollMobile
+     doesn't know about it — this layout's list was never rotated, so it
+     was never the broken part "the loop" note in the desktop rules
+     exists to fix). Left in, the echoes would just be dead scroll
+     distance past Skye that nothing ever selects. */
+  .q-theme-echo, .q-roster-loop { display: none; }
+
+  #q-main-list {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    transform: none;
+  }
+  /* difference blending exists so the names can sit inside a full-bleed
+     portrait; upright, they sit on the page instead */
+  #q-main-list.q-blend { mix-blend-mode: normal; }
+  #q-main-list > .q-inner { display: block; height: 100%; }
+  /* The percentage chain has to be unbroken or the list cannot scroll: this
+     wrapper sits between .q-inner and the <ul>, and without a height of its
+     own it sizes to its content, so the ul's `height: 100%` resolved against
+     751px of names rather than the viewport. On anything shorter than the full
+     list — a 560px phone, or the ~557px the Gallery's frame gives the piece —
+     the roster simply ran off the bottom edge with no way to reach the last
+     four agents. */
+  #q-main-list .q-list-wrapper.q-main { height: 100%; }
+  #q-main-list .q-list-part {
+    height: 100%;
+    justify-content: flex-start;
+    padding: 3.4rem 1.1rem 2rem calc(var(--rail) + 1.1rem);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    transform: none;              /* --yVal is scroll velocity; there is none here */
+  }
+  #q-themes { padding-top: 3.4rem; }
+
+  .q-theme > .q-inner { display: block; }
+  .q-theme .q-col { display: block; }
+  .q-theme .q-theme-title {
+    font-size: 1.75rem;
+    line-height: 1.2;
+    margin: 0;
+  }
+  .q-theme .q-shadow { display: none; }
+  .q-theme.q-hover .q-theme-title { color: var(--val-red); }
+
+  /* the tagline still belongs to the selected agent only — but upright it can
+     hold a line of its own instead of being pinned under the name */
+  .q-theme-tagline {
+    position: static;
+    display: block;
+    max-width: 100%;
+    margin: 0 0 .5rem;
+    font-size: .5rem;
+    letter-spacing: .14em;
+  }
+  /* Upright, the row is as wide as the screen and the clamp above (which is a
+     rotated measurement) means nothing — so drop the marquee entirely and let
+     one copy truncate. The second copy exists only to make scrolling seamless. */
+  .q-theme-tagline { width: auto; mask-image: none; -webkit-mask-image: none; }
+  .q-theme-tagline .q-tag-track { animation: none; display: block; width: 100%; }
+  .q-theme-tagline .q-tag-track > span {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .q-theme-tagline .q-tag-track > span:after { content: none; }
+  .q-theme-tagline .q-tag-track > span + span { display: none; }
+
+  /* Art comes back, as a backdrop rather than the subject. The per-agent
+     widths and anchors in agents.js are framed for a landscape viewport, so
+     they are overridden wholesale here — the only place in this file that has
+     to outrank those inline styles. */
+  #q-preview { opacity: .42; }
+  #q-preview .q-preview-item {
+    width: 170vw !important;
+    right: -35% !important;
+    left: auto !important;
+    top: auto !important;
+    bottom: 2% !important;
+  }
+  #q-preview-wash.on { opacity: .38; }
+
+  .q-credit { top: auto; bottom: .5rem; right: .8rem; max-width: 60vw; }
+
+  /* Dossier stacks. dossier.js drives it on the vertical axis at this width —
+     same ported formulas, axis swapped; see its VERTICAL note. */
+  #q-dossier-scroll > .scroll-content {
+    flex-direction: column;
+    width: 100%; height: auto;
+  }
+  .q-dossier-section {
+    width: 100%; height: auto;
+    min-height: 78vh;
+    padding: 4.5rem 1.4rem 3rem;
+  }
+  /* Anchored to the bottom, not centred: DossierFX ('layered') writes this
+     element's transform every frame, which drops the base rule's
+     translateY(-50%) — harmless against a 140%-tall figure on desktop, but on
+     a phone it pushed the art off the bottom of the panel. */
+  .q-dossier-bg {
+    top: auto; bottom: 0;
+    right: -12%;
+    height: 58%;
+    transform: none;
+    opacity: .25;
+  }
+  .q-dossier-bio-text { font-size: .92rem; }
+  /* back to stacked — there is no room for two columns at 390px */
+  .q-dossier-ability { flex-direction: column; align-items: flex-start; gap: 0; }
+  .q-ability-clip-wrap { width: 100%; margin-bottom: 1.2rem; }
+  .q-ability-copy { max-width: none; }
+  .q-ability-desc { font-size: .88rem; }
+
+  /* the rail is the one part of the dossier that was already phone-shaped —
+     it only needs to stop being clipped by the bio column's max-width */
+  .q-rail { max-width: none; margin: 1.3rem 0 1.1rem; }
+  .q-rail-card { width: 8.5rem; }
+}

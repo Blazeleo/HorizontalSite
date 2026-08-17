@@ -1,0 +1,314 @@
+/* ---------------------------------------------------------------------------
+   Qode Interactive "QI Catalog" intro — CSS
+   Every rule below is transcribed from the source site's own stylesheet
+   (qodeinteractive.com/catalog/css/bundle.css), de-vendor-prefixed and stripped
+   to the selectors the intro sequence actually uses. Values are verbatim, not
+   eyeballed. See ../SPEC.md for provenance.
+--------------------------------------------------------------------------- */
+
+* { box-sizing: border-box; }
+::selection { background: #d3d3d3; }
+
+html { --black: #101010; font-size: 20px; }
+@media screen and (min-width: 2560px) { html { font-size: 22px; } }
+@media screen and (max-width: 1440px) { html { font-size: 17px; } }
+@media screen and (max-width: 1366px) { html { font-size: 16px; } }
+
+html, body { height: 100%; width: 100%; margin: 0; }
+@media only screen and (min-width: 1025px) { html, body { overflow: hidden; } }
+
+body { font-family: Heebo, sans-serif; isolation: isolate; background: #fff; }
+
+img { max-width: 100%; vertical-align: middle; }
+a { color: inherit; text-decoration: inherit; }
+
+h1, h2 { font-size: 5.8vmax; font-weight: 700; line-height: 1.19; color: var(--black); margin: 0; }
+h5 { font-size: 1rem; line-height: 1; color: var(--black); margin: 0; }
+
+.q-abs { position: absolute; top: 0; left: 0; height: 100%; width: 100%; }
+.q-front { position: relative; z-index: 100; }
+.q-back { z-index: -1; }
+.q-no-point { pointer-events: none; }
+.q-move { will-change: transform; }
+
+/* -- scroll surface -------------------------------------------------------
+   #q-scroll-vh is the smooth-scrollbar container; .q-sizer is the only thing
+   inside it and its 600vh height IS the length of the intro. The library
+   inserts .scroll-content and translates it.                              */
+#q-scroll-vh {
+  position: absolute; top: 0; left: 0;
+  height: 100%; width: 100%;
+  overflow: hidden;
+}
+#q-scroll-vh .q-sizer { height: 600vh; }
+#q-scroll-vh .scroll-content { transform: translate3d(0, 0, 0); }
+
+/* -- intro shell ---------------------------------------------------------- */
+#q-intro {
+  position: fixed;
+  width: 100vw; height: 100vh;
+  z-index: 3000;
+  overflow: hidden;
+  --skewX: 0;
+  --skewY: 0;
+}
+#q-intro section {
+  position: fixed; top: 0; left: 0;
+  height: 100%; width: 100%;
+  pointer-events: none;
+}
+#q-intro.q-pointer { cursor: pointer; }
+
+#q-intro-bg {
+  position: absolute; top: 0; left: 0;
+  height: 100%; width: 100%;
+  background-color: var(--black);
+  transform-origin: 0 0;
+  z-index: -1;
+}
+
+#q-pt-1 { overflow: hidden; }
+.q-pt-mask { position: absolute; top: 0; left: 0; height: 100%; width: 100%; overflow: hidden; }
+
+/* -- the four title columns ----------------------------------------------
+   The <h1> is rotated -90deg, so its four stacked child spans read as four
+   vertical columns, and their local x-axis runs UP the screen.            */
+#q-intro-title {
+  position: absolute;
+  left: 12.5%;
+  bottom: 5rem;
+  transform: rotate(-90deg);
+  font-size: 18vmin;
+  line-height: 1.07;
+}
+@media only screen and (max-width: 768px) {
+  #q-intro-title { left: 1rem; bottom: 3rem; }
+}
+#q-intro-title > span { display: block; position: relative; width: 100%; color: #fff; }
+
+/* start positions — the initial fly-in tweens these to x:0 */
+#q-intro-title > span:first-child  { transform: translate3d( 120vh, 0, 0); }
+#q-intro-title > span:nth-child(2) { transform: translate3d(-120vh, 0, 0); }
+#q-intro-title > span:nth-child(3) { transform: translate3d( 140vh, 0, 0); }
+#q-intro-title > span:last-child   { transform: translate3d(-160vh, 0, 0); }
+
+#q-intro-title .q-mark { display: inline-block; visibility: hidden; }
+
+/* --skewX is the smoothed scroll velocity, written every frame by intro.js.
+   These three rules are the whole "the type reacts to how fast you scroll"
+   effect: the face shears, and two ghost copies lag behind it by 2px/1px
+   per unit of velocity. */
+#q-intro-title .q-skew {
+  display: block;
+  transform-origin: 0 0;
+  transform: skewX(calc(var(--skewX) * -.2deg)) skewY(calc(var(--skewY) * -.05deg));
+}
+#q-intro-title .q-shadow {
+  position: absolute; top: 0; left: 0;
+  z-index: -1;
+  will-change: transform;
+}
+#q-intro-title .q-shadow.q-front {
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 1px #fff;
+  opacity: .25;
+  transform: translate3d(calc(var(--skewX) * 2px), calc(var(--skewY) * -2px), 0);
+}
+#q-intro-title .q-shadow.q-back {
+  color: rgba(211, 211, 211, .05);
+  transform: translate3d(calc(var(--skewX) * 1px), calc(var(--skewY) * -1px), 0);
+}
+
+/* -- the slide carousel ---------------------------------------------------- */
+#q-intro-slider {
+  position: absolute;
+  top: calc(50% - 13.8vmax);
+  left: calc(100% - 15vmax);
+  height: 27.55vmax;
+  width: 49vmax;
+  background-color: #000;
+  overflow: hidden;
+  visibility: hidden;
+}
+#q-intro-slider .q-inner { height: 100%; }
+#q-intro-slider .q-intro-slide { position: absolute; top: 0; left: 0; height: 100%; width: 100%; }
+#q-intro-slider .q-intro-slide:not(:first-child) { visibility: hidden; }
+#q-intro-slider img { height: 100%; width: 100%; object-fit: cover; }
+
+/* -- affordances ----------------------------------------------------------- */
+#q-intro-scroll {
+  position: fixed;
+  bottom: 1.75rem; right: 1.75rem;
+  height: 3.5vw;
+  display: flex; align-items: center;
+  z-index: 100;
+  mix-blend-mode: difference;
+  stroke: #fff;
+}
+#q-intro-scroll svg {
+  height: 100%;
+  stroke-dasharray: 430;
+  stroke-dashoffset: 430;
+  fill: transparent;
+}
+
+#q-skip-the-line {
+  position: fixed; top: 0; right: 0;
+  display: flex; align-items: center;
+  z-index: 100;
+  mix-blend-mode: difference;
+  cursor: pointer;
+  visibility: hidden;
+}
+#q-skip-the-line .q-inner { padding: 1.75rem; }
+#q-skip-the-line svg { width: .8rem; margin: 0 .25rem; vertical-align: baseline; }
+#q-skip-the-line svg line, #q-skip-the-line svg polyline {
+  stroke: #fff; stroke-width: 1; stroke-miterlimit: 10; fill: none;
+}
+.q-link-label { font-size: .8rem; line-height: 1.1; letter-spacing: .01em; color: #fff; }
+
+/* -- state while the intro owns the screen --------------------------------- */
+.q-with-intro #q-main-wrapper, .q-with-intro body { overflow: hidden; height: 100vh; }
+.q-with-intro #q-header { transform: translate3d(-100%, 0, 0); }
+
+@media only screen and (min-width: 1025px) {
+  #q-main-wrapper { position: absolute; top: 0; left: 0; height: 100%; width: 100%; }
+}
+
+/* ---------------------------------------------------------------------------
+   The catalog underneath. Present only because it is what the intro reveals:
+   the closing beat slides it in and un-skews it. Hover/preview behaviour is
+   deliberately NOT part of this build.
+--------------------------------------------------------------------------- */
+#q-header {
+  position: fixed; top: 0; left: 0;
+  height: 100vh; width: 6.3rem;
+  background-color: #fff;
+  border-right: 1px solid #ededed;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 2000;
+}
+#q-header .q-wordmark {
+  position: absolute; top: 1.5rem; left: 0; width: 100%;
+  text-align: center; font-size: .7rem; font-weight: 700; line-height: 1.3;
+  color: var(--black);
+}
+#q-header .q-burger { width: 2rem; border-top: 1px solid var(--black); border-bottom: 1px solid var(--black); height: 7px; }
+#q-header .q-footnote {
+  position: absolute; bottom: 1.5rem; left: 0; width: 100%;
+  padding: 0 .5rem; font-size: .55rem; line-height: 1.5; color: #9a9a9a;
+}
+
+.q-homepage { width: 100%; }
+.q-list-wrapper:first-child { transform-origin: 0 0; }
+
+#q-main-list {
+  position: relative;
+  width: 100vh; height: 100vw;
+  z-index: 100;
+  transform: rotate(-90deg) translateX(-100%) translateZ(0);
+  transform-origin: 0 0;
+}
+#q-main-list.q-blend { mix-blend-mode: soft-light; }
+#q-main-list > .q-inner { --yVal: 0; }
+#q-main-list > .q-inner:not(.q-shadows) .q-shadow { display: none; }
+
+#q-main-list .q-list-part {
+  display: flex; flex-direction: column; justify-content: center;
+  height: 100vw;
+  padding-left: 1.5rem;
+  margin: 0; list-style: none;
+  transform: skewY(calc(var(--yVal) * .1deg)) translateZ(0);
+  transform-origin: 50% 100%;
+  will-change: transform;
+}
+#q-themes { padding-top: calc(6.3rem + 5px); }
+
+.q-theme { position: relative; }
+.q-theme .q-col { display: inline-block; white-space: nowrap; will-change: transform, opacity; pointer-events: none; }
+.q-theme .q-theme-title {
+  position: relative; display: inline-block; margin-right: 1vw;
+  transition: color .15s .4s;
+}
+.q-theme .q-theme-title:not(:first-child) { color: #efefef; }
+.q-theme .q-shadow { position: absolute; top: 0; left: 0; z-index: -1; will-change: transform; }
+.q-theme .q-shadow.q-front {
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 1px #000;
+  opacity: .2;
+  transform: translate3d(0, calc(var(--yVal) * -4px), 0);
+}
+.q-theme .q-shadow.q-back {
+  color: rgba(211, 211, 211, .35);
+  transform: translate3d(0, calc(var(--yVal) * -2px), 0);
+}
+.q-theme > .q-inner { position: relative; display: inline-block; visibility: hidden; }
+
+/* the invisible hit layer over each name — in the source this is the
+   <a class="q-home-to-single q-abs"> that opens the project */
+.q-theme .q-home-to-single { z-index: 100; }
+
+/* -- hover: tagline ------------------------------------------------------
+   Two copies of the same line run the same 6s marquee half a cycle apart
+   (.q-lead is offset -3s, .q-follow sits at 0,0 absolutely), so one is always
+   entering as the other leaves. Four of the thirteen taglines are long enough
+   that they get an 8s cycle and a -4s offset instead. */
+@keyframes qMarquee {
+  0%   { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+.q-theme.q-hover .q-theme-tagline { opacity: 1; }
+.q-theme-tagline {
+  position: absolute; left: .4vw; bottom: -.15vw;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity .2s cubic-bezier(.215, .61, .355, 1);
+  color: #7b7b7b;
+  white-space: nowrap;
+  will-change: opacity;
+}
+.q-theme-tagline > span { display: inline-block; animation: qMarquee 6s infinite linear; }
+.q-theme-tagline > span:after { content: '-'; margin: 0 .5rem; }
+.q-theme-tagline .q-lead { animation-delay: -3s; }
+.q-theme-tagline .q-follow { position: absolute; top: 0; left: 0; }
+
+.q-theme:nth-child(1) .q-theme-tagline > span,
+.q-theme:nth-child(2) .q-theme-tagline > span,
+.q-theme:nth-child(3) .q-theme-tagline > span,
+.q-theme:nth-child(12) .q-theme-tagline > span { animation-duration: 8s; }
+.q-theme:nth-child(1) .q-theme-tagline .q-lead,
+.q-theme:nth-child(2) .q-theme-tagline .q-lead,
+.q-theme:nth-child(3) .q-theme-tagline .q-lead,
+.q-theme:nth-child(12) .q-theme-tagline .q-lead { animation-delay: -4s; }
+
+/* ---------------------------------------------------------------------------
+   Hover preview. #q-preview sits behind #q-main-list (which has z-index:100
+   and mix-blend-mode:soft-light), so the names blend into whatever art is
+   showing. Every project has its own hand-set frame: a width in vh with a px
+   cap equal to the image's own natural width, and the height simply follows
+   the image's aspect ratio. Transcribed verbatim.
+--------------------------------------------------------------------------- */
+#q-preview {
+  position: fixed; top: 0; left: 0;
+  height: 100%; width: 100%;
+  pointer-events: none;
+}
+@media only screen and (max-width: 1024px) { #q-preview { display: none; } }
+
+#q-preview .q-preview-item { visibility: hidden; position: absolute; }
+#q-preview .q-preview-image { height: 100%; width: 100%; transform: translate3d(0, 0, 0); }
+
+#q-preview .q-preview-amedeo   { top: 6%;  left: 49%;                width: 28vh;     max-width: 467px; }
+#q-preview .q-preview-blaze    { top: 0;   left: 12%;                width: 43.888vh; max-width: 474px; }
+#q-preview .q-preview-blaze img { transform: scaleX(-1); }
+#q-preview .q-preview-dieter   { top: 0;   left: calc(50% - 40vh);   width: 81vh;     max-width: 878px; }
+#q-preview .q-preview-galatia  { top: 10%; right: 10%;               width: 34.44vh;  max-width: 372px; }
+#q-preview .q-preview-haar     { top: 0;   left: calc(50% - 100vh);  width: 231vh;    max-width: 2497px; }
+#q-preview .q-preview-ion      { top: 5%;  right: 12%;               width: 52.22vh;  max-width: 564px; }
+#q-preview .q-preview-kenozoik { top: 0;   right: 5%;                width: 55vh;     max-width: 620px; }
+#q-preview .q-preview-koto     { top: 5%;  left: 36%;                width: 46.2vh;   max-width: 499px; }
+#q-preview .q-preview-manon    { top: 0;   left: calc(50% - 41vh);   width: 82.8vh;   max-width: 895px; }
+#q-preview .q-preview-monolab  { top: 0;   right: calc(50% - 38vh);  width: 61.5vh;   max-width: 665px; }
+#q-preview .q-preview-penumbra { top: 8%;  right: 16%;               width: 58.89vh;  max-width: 636px; }
+#q-preview .q-preview-smilte   { left: 20%; bottom: 0;               width: 114.9vh;  max-width: 1241px; }
+#q-preview .q-preview-tetsuo   { top: 10%; left: 15%;                width: 49.5vh;   max-width: 535px; }
