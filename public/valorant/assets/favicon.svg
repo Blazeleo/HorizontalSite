@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Same dark/red pair as the rest of the piece (css/valorant.css
+       val-dark / val-red custom properties), not new colours picked
+       for this icon. -->
+  <rect width="32" height="32" rx="6" fill="#0F1923" />
+  <!-- The double chevron from #q-intro-scroll (index.html), redrawn at
+       favicon scale rather than reused as-is: that copy's viewBox
+       (0 0 109.1 83.9) and 2px stroke are tuned for a 40px on-page glyph,
+       and shrink to a grey smear at 16-32px. Same two-polyline shape,
+       proportions and stroke weight rebuilt for this canvas instead. -->
+  <polyline points="8,7 17,16 8,25" fill="none" stroke="#FF4655"
+    stroke-width="3.4" stroke-linecap="square" stroke-linejoin="miter" />
+  <polyline points="15,7 24,16 15,25" fill="none" stroke="#FF4655"
+    stroke-width="3.4" stroke-linecap="square" stroke-linejoin="miter" />
+</svg>

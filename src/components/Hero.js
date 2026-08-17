@@ -66,6 +66,12 @@ export default function Hero({ count, onStart }) {
         >
           Build Your Own →
         </button>
+        <button
+          className="pill-btn big"
+          onClick={() => document.getElementById("gallery")?.scrollIntoView({ behavior: "smooth" })}
+        >
+          Skip to Gallery ↓
+        </button>
       </div>
 
       <Cue>Scroll to begin</Cue>

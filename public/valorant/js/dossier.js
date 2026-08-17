@@ -78,7 +78,13 @@
   function buildSections(agent) {
     var slug = agent.name.toLowerCase();
     var out = [
-      '<div class="q-dossier-section q-dossier-bio">' +
+      // NEW: background-image, not another <img> — .q-dossier-section::before
+      // (css/valorant.css) reads it straight off the section via
+      // background:inherit and blurs/dims it into an ambient backdrop, so
+      // every section (this bio panel, each ability below) gets one from a
+      // single shared rule rather than a bespoke layer per section. Reuses
+      // the agent's own already-vendored splash art — nothing fetched.
+      '<div class="q-dossier-section q-dossier-bio" style="background-image:url(assets/splash/' + slug + '.webp)">' +
         // NEW source. This used to read splash-layers/<agent>-figure.webp — a
         // 1400x788 full-frame layer built for the roster's wide composition and
         // therefore mostly transparent, which the base `img { max-width: 100% }`
@@ -101,8 +107,14 @@
 
     agent.abilityInfo.forEach(function (ab, i) {
       var fx = FX_ORDER[i];
+      // NEW: same background-image + ::before treatment as the bio panel
+      // above, sourced from this ability's own clip poster — already
+      // vendored (assets/fetch-ability-clips.py), already exactly what the
+      // sharp clip in the foreground is a still of, so the blurred backdrop
+      // reads as *this* ability's own scene rather than generic texture.
       out.push(
-        '<div class="q-dossier-section q-dossier-ability" data-ability="' + i + '">' +
+        '<div class="q-dossier-section q-dossier-ability" data-ability="' + i + '" ' +
+             'style="background-image:url(assets/clips/' + slug + '-' + SLOTS[i] + '.jpg)">' +
           // Riot's own showcase footage for this ability, vendored and
           // transcoded by assets/fetch-ability-clips.py. preload="none" plus a
           // poster means nothing decodes until the section is actually in
@@ -395,17 +407,19 @@
           self.scrollEl.innerHTML = '';
           gsap.set(document.querySelectorAll('.q-theme .q-inner'), { autoAlpha: 1 });
 
-          // Put the roster back the way it was found. show() faded the hover
-          // art out and nothing restored it, so closing landed you on a bare
-          // wash — and since fadeOutImage now clears .q-hover, re-firing the
-          // agent's own mouseenter runs the whole normal path: shard reveal,
-          // parallax planes, --accent, tagline. No dossier-specific restore.
-          var inner = document.querySelector(
-            '#q-themes .q-theme[data-index="' + self.openIndex + '"] .q-inner');
-          if (inner) {
-            var ev = document.createEvent('Events');
-            ev.initEvent('mouseenter', true, false);
-            inner.dispatchEvent(ev);
+          // Put the roster back the way it was found. show() faded the
+          // preview art out and nothing restored it, so closing landed you
+          // on a bare wash — and since fadeOutImage also clears .q-hover,
+          // this needs to explicitly reselect rather than assume anything
+          // still is. NEW: used to re-fire the agent's own mouseenter to get
+          // there, back when hover drove selection. Nothing listens for one
+          // any more (js/valorant.js's Roster.prototype.select replaced that
+          // binding — see js/controls.js's own header note), so the dispatch
+          // was a silent no-op: closing the dossier left the roster with no
+          // selection and no art at all. window.__roster.select is the same
+          // entry point scroll and keyboard selection already call.
+          if (window.__roster && self.openIndex != null) {
+            window.__roster.select(self.openIndex);
           }
         }
       });

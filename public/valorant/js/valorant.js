@@ -35,17 +35,62 @@
     else el.classList.add('q-no-point');
   }
 
-  function fireEvent(selector, type) {
-    var el = document.querySelector(selector);
-    if (!el) return;
-    var e = document.createEvent('Events');
-    e.initEvent(type, true, false);
-    el.dispatchEvent(e);
-  }
-
   /* ---- NEW: build the roster from data -----------------------------------
      13 slides, 13 names and 13 art frames all come off one array, so the
      carousel, the list and the hover art can never drift out of sync. */
+  /* Builds one <li class="q-theme"> — pulled out of buildDOM so the same
+     markup can be stamped out three times: once as the real, interactive
+     roster, and twice more as the loop's decorative echoes (see buildDOM's
+     own comment below for why). echo elements get the extra class plus
+     aria-hidden and (css/valorant.css) pointer-events:none, so they read
+     and behave as pure scenery — never selectable, never clickable — while
+     still being pixel-identical to the real thing, which is what the loop
+     needs them for. */
+  function buildThemeLI(a, i, echoClass) {
+    var tag = a.role + ' — ' + a.abilities.join(' · ');
+    var li = document.createElement('li');
+    li.className = echoClass ? 'q-theme q-theme-echo ' + echoClass : 'q-theme';
+    li.dataset.index = i;
+    li.dataset.accent = a.accent;
+    if (echoClass) li.setAttribute('aria-hidden', 'true');
+    li.innerHTML =
+      '<div class="q-inner">' +
+        '<span class="q-home-to-single q-abs"></span>' +
+        '<div class="q-col"><h2 class="q-theme-title">' +
+          '<span>' + a.name + ' </span>' +
+          '<span class="q-shadow q-front" aria-hidden="true">' + a.name + ' </span>' +
+          '<span class="q-shadow q-back" aria-hidden="true">' + a.name + '</span>' +
+        '</h2></div>' +
+        // Two copies inside one track, translated -50% — the seamless marquee
+        // idiom the HUD ticker uses. See the .q-theme-tagline note in the CSS
+        // for why the old two-against-each-other version couldn't survive the
+        // window being clamped.
+        '<h5 class="q-theme-tagline">' +
+          '<span class="q-tag-track">' +
+            '<span>' + tag + '</span>' +
+            '<span>' + tag + '</span>' +
+          '</span>' +
+        '</h5>' +
+      '</div>';
+    return li;
+  }
+
+  /* The loop's demarcation — not a `.q-theme` (selectable() and
+     nearestAgent() in controls.js both key off that class, so this is
+     invisible to both, same as the echoes: it can never become "the
+     current agent"), just a divider the reader scrolls past right before
+     the loop rebases. Built twice, once for each seam — see buildDOM. */
+  function buildLoopMark(dirClass) {
+    var mark = document.createElement('li');
+    mark.className = 'q-roster-loop ' + dirClass;
+    mark.setAttribute('aria-hidden', 'true');
+    mark.innerHTML =
+      '<span class="q-roster-loop-line"></span>' +
+      '<span class="q-roster-loop-label">Roster loops<br />back to start</span>' +
+      '<span class="q-roster-loop-line"></span>';
+    return mark;
+  }
+
   function buildDOM() {
     var slideWrap = document.querySelector('#q-intro-slide-wrap');
     var themes = document.querySelector('#q-themes');
@@ -64,38 +109,14 @@
       slideWrap.appendChild(slide);
 
       // --- roster name ---
-      var tag = a.role + ' — ' + a.abilities.join(' · ');
-      var li = document.createElement('li');
-      li.className = 'q-theme';
-      li.dataset.index = i;
-      li.dataset.accent = a.accent;
-      li.innerHTML =
-        '<div class="q-inner">' +
-          '<span class="q-home-to-single q-abs"></span>' +
-          '<div class="q-col"><h2 class="q-theme-title">' +
-            '<span>' + a.name + ' </span>' +
-            '<span class="q-shadow q-front" aria-hidden="true">' + a.name + ' </span>' +
-            '<span class="q-shadow q-back" aria-hidden="true">' + a.name + '</span>' +
-          '</h2></div>' +
-          // Two copies inside one track, translated -50% — the seamless marquee
-          // idiom the HUD ticker uses. See the .q-theme-tagline note in the CSS
-          // for why the old two-against-each-other version couldn't survive the
-          // window being clamped.
-          '<h5 class="q-theme-tagline">' +
-            '<span class="q-tag-track">' +
-              '<span>' + tag + '</span>' +
-              '<span>' + tag + '</span>' +
-            '</span>' +
-          '</h5>' +
-        '</div>';
-      themes.appendChild(li);
+      themes.appendChild(buildThemeLI(a, i, null));
 
-      // --- hover art frame (hand-set width + anchor, per agent) ---
-      // Two visual systems share this box: a shard-host, where ShardReveal
-      // (effects.js) assembles the flattened splash out of angled slices on
-      // reveal, and a layer-host of the four source planes, cross-alpha-masked
-      // to reproduce that same flattened image, which LayerParallax takes over
-      // once the shards settle. See effects.js for why it's split this way.
+      // --- preview art frame (uniform width + anchor, every agent) ---
+      // The four source planes, cross-alpha-masked at build time to
+      // reproduce the flattened splash when stacked at rest. LayerParallax
+      // (effects.js) both assembles them in on a change of agent and drifts
+      // them apart on scroll while one stays selected — one system, not a
+      // separate reveal effect handing off to a separate idle one.
       var slug = a.name.toLowerCase();
       var item = document.createElement('div');
       item.className = 'q-preview-item';
@@ -104,7 +125,6 @@
       item.dataset.accent = a.accent;
       item.setAttribute('style', 'width:' + a.width + ';' + a.pos);
       item.innerHTML =
-        '<div class="q-shard-host"></div>' +
         '<div class="q-layer-host">' +
           '<img class="q-layer" data-plane="haze"   src="assets/splash-layers/' + slug + '-haze.webp"   alt="" loading="lazy" decoding="async" />' +
           '<img class="q-layer" data-plane="motif"  src="assets/splash-layers/' + slug + '-motif.webp"  alt="" loading="lazy" decoding="async" />' +
@@ -114,6 +134,41 @@
       preview.appendChild(item);
     });
 
+    /* --- NEW: the loop, made to look continuous --------------------------
+       The roster loops on desktop now (js/controls.js's bindRosterScrollDesktop)
+       rather than stopping dead at Skye — scroll past the last agent and it
+       wraps back to Brimstone, and the same the other way. A wrap that just
+       teleports reads as a bug the first time it happens, and — the actual
+       bug report this replaced — sizing the scrollable tail with a fixed
+       vw guess so there was *something* past Skye to scroll into never
+       reliably matched every screen size (measured short on at least one:
+       the loop fired while Cypher, not Skye, was still selected).
+
+       Both problems share one fix: two more full, non-interactive passes
+       through the roster, one appended after Skye and one after that
+       (rendered *before* Brimstone via CSS order:-1 — see .q-theme-echo-lead
+       in css/valorant.css — despite coming last in the DOM, which is what
+       keeps every `[data-index]` lookup elsewhere finding the real,
+       interactive agent first). Scrolling now has real content in both
+       directions no matter the viewport, and once the nearest match is an
+       echo, bindRosterScrollDesktop rebases the scroll position by exactly
+       one loop's length — landing on the pixel-identical real agent, so the
+       swap is invisible regardless of screen size, because it no longer
+       depends on measuring one. */
+    themes.appendChild(buildLoopMark('q-roster-loop-trail'));
+    AGENTS.forEach(function (a, i) {
+      themes.appendChild(buildThemeLI(a, i, 'q-theme-echo-trail'));
+    });
+    // The lead echo before its own mark, not after — order:-1 (css/valorant.css)
+    // renders this whole group before the real list, and within a shared
+    // order value elements still lay out in DOM sequence, so the mark has to
+    // come last in source order to end up adjacent to real Brimstone rather
+    // than stranded at the very start of the roster.
+    AGENTS.forEach(function (a, i) {
+      themes.appendChild(buildThemeLI(a, i, 'q-theme-echo-lead'));
+    });
+    themes.appendChild(buildLoopMark('q-roster-loop-lead'));
+
     var canvasEl = document.querySelector('#q-intro-canvas');
     if (canvasEl) CanvasWipe.init(canvasEl);
   }
@@ -122,8 +177,9 @@
      The asymmetry Qode's version had is kept — the outgoing frame withdraws
      fast, only the incoming one gets the production. What plays for the
      incoming frame is no longer a straight port: see effects.js. This class
-     just sequences the two effects it defines and keeps the asymmetric feel
-     intact: outgoing is near-instant, incoming is the whole show. */
+     sequences LayerParallax's own two beats (enter, then the idle drift) and
+     keeps the asymmetric feel intact: outgoing is near-instant, incoming is
+     the whole show. */
   function Preview(el) {
     this.DOM = { sel: el };
     this.DOM.active = null;
@@ -134,20 +190,29 @@
     var prev = this.DOM.active;
     if (prev && prev !== this.DOM.items[index]) {
       LayerParallax.detach();
-      var prevShardHost = prev.querySelector('.q-shard-host');
-      if (prevShardHost) ShardReveal.clear(prevShardHost);
       gsap.set(prev.querySelector('.q-layer-host'), { autoAlpha: 0 });
       gsap.to(prev, { duration: 0.12, autoAlpha: 0, overwrite: true });
     }
 
     var item = this.DOM.items[index];
     this.DOM.active = item;
+    /* NEW: killTweensOf before the set, not just the set itself. Scrolling
+       fast enough — the loop's own rebase can revisit an agent within a
+       single burst (js/controls.js's bindRosterScrollDesktop) — calls this
+       for the same item twice in quick succession: once while it's "prev"
+       above (a queued 0.12s fade-to-0 on some *other* call), once here as
+       the new `item`. gsap.set has no implicit overwrite, so without this
+       the earlier fade tween keeps running after the set and quietly drags
+       the opacity back to 0 once it resumes ticking — the agent stays
+       flagged as selected with nothing rendered. Killing first guarantees
+       whichever item is selected when the dust settles is the one actually
+       shown, regardless of what it was mid-animating a moment before. */
+    gsap.killTweensOf(item);
     gsap.set(item, { autoAlpha: 1 });
 
-    var shardHost = item.querySelector('.q-shard-host');
-    ShardReveal.play(shardHost, item.dataset.splash, item.dataset.accent).then(function () {
-      // hand off to the pointer-driven planes only once the assembly settles
-      // and only if this item is still the one being hovered
+    LayerParallax.enter(item).then(function () {
+      // hand off to the scroll-driven drift only once the entrance settles
+      // and only if this item is still the one selected
       if (item.classList.contains('q-preview-active')) LayerParallax.attach(item);
     });
     this.DOM.items.forEach(function (i) { i.classList.remove('q-preview-active'); });
@@ -167,8 +232,6 @@
 
       // the same teardown changeImage does for an outgoing item — it is skipped
       // there once DOM.active is null, so it has to happen here instead
-      var host = item.querySelector('.q-shard-host');
-      if (host) ShardReveal.clear(host);
       gsap.set(item.querySelector('.q-layer-host'), { autoAlpha: 0 });
     }
 
@@ -212,25 +275,19 @@
     config.DOM.objs.preview.changeImage(theme.dataset.index);
   };
 
-  Roster.prototype.changeImage = function () {
-    var self = this;
-    var onEnter = function (e) {
-      var current = document.querySelector('.q-hover');
-      if (current) {
-        if (e.target.parentElement !== current) {
-          self.removeHover();
-          self.setHover(e.target.parentElement);
-        }
-      } else {
-        self.setHover(e.target.parentElement);
-      }
-    };
-    this.DOM.themeInners.forEach(function (el) {
-      el.addEventListener('mouseenter', onEnter);
-    });
+  /* NEW: selection used to be mouseenter-driven — hovering a name was the
+     only way to change agent. It isn't anymore: js/controls.js's scroll
+     selection and arrow keys are the only ways in, both routing through
+     window.__roster.select below. This class keeps setHover/removeHover as
+     the one place --accent and the preview actually change; it just no
+     longer listens for a pointer to tell it when. */
+  Roster.prototype.select = function (theme) {
+    if (!theme || theme.classList.contains('q-hover')) return;
+    this.removeHover();
+    this.setHover(theme);
   };
 
-  Roster.prototype.initEvents = function () { this.changeImage(); };
+  Roster.prototype.initEvents = function () {};
 
   Roster.prototype.set = function () {
     gsap.set(this.DOM.themeInners, { autoAlpha: 1 });
@@ -366,6 +423,13 @@
   };
 
   Intro.prototype.showSlider = function () {
+    // Restored to the original two-tween entrance (box + inner content
+    // sliding in together) — see sliderTimeline() below for where the
+    // conflict this used to have with it actually got fixed. Cutting the
+    // box's own motion here traded an intermittent invisible-box bug for a
+    // permanent, visible one: the box (with its border/background) now
+    // popped into place instantly while only the content inside kept
+    // sliding, which read as janky rather than as one coordinated reveal.
     gsap.fromTo('#q-intro-slider',
       { x: '100%', autoAlpha: 1 },
       { duration: 1, x: '0%', delay: 0.1, ease: 'power4.out' });
@@ -423,7 +487,20 @@
         last = i;
       }
     });
-    return tl.to('#q-intro-slider', { duration: 100, x: -150 + this.viewportUnit() });
+    // FIX: this used to scrub #q-intro-slider's own `x` — the exact same
+    // element and property showSlider() above tweens once, on its own
+    // 1.1s clock, for the entrance. Two writers to one property: whichever
+    // rendered last on the first scroll won, and which one that was
+    // depended on how far the entrance tween had gotten, which is why the
+    // whole box (not just its picture) intermittently vanished — parked at
+    // the entrance's *own* off-screen "from" (x:100%) — on the very first
+    // scroll after titles finished, worse the faster a reader scrolled in.
+    // #q-pt-2 is the section wrapping #q-intro-slider — .q-pt's own
+    // position:fixed;inset:0 (this file's own note above #q-intro-title)
+    // carries no transform of its own and nothing else ever sets one on it,
+    // so scrubbing *this* element's x moves the same single child the same
+    // visual distance, with no second tween anywhere near it to race.
+    return tl.to('#q-pt-2', { duration: 100, x: -150 + this.viewportUnit() });
   };
 
   Intro.prototype.resetList = function () {
@@ -481,15 +558,39 @@
     this.checkForActive();
   };
 
-  /* Seeds a hover so the roster isn't blank on hand-off. Unlike the source —
-     whose 0-based index into 1-based :nth-child() means it sometimes seeds
-     nothing — this one always lands on an agent. */
+  /* Seeds a selection so the roster isn't blank on hand-off. Calls straight
+     into Roster.select rather than firing a synthetic mouseenter — nothing
+     listens for one any more (NEW, see Roster.prototype.select above). */
   function checkForActive() {
     if (document.querySelector('.q-hover')) return;
-    var themes = document.querySelectorAll('#q-themes .q-theme');
-    if (!themes.length) return;
-    var t = Math.floor(Math.random() * themes.length) + 1;
-    fireEvent('#q-themes .q-theme:nth-child(' + t + ') .q-inner', 'mouseenter');
+    // :not(.q-theme-echo) — the loop's decorative passes (buildDOM) share
+    // the .q-theme class so they inherit its styling, but they aren't real
+    // agents; landing the seed on one would set .q-hover on scenery instead
+    // of an interactive item.
+    var themes = document.querySelectorAll('#q-themes .q-theme:not(.q-theme-echo)');
+    if (!themes.length || !config.DOM.objs.roster) return;
+    var i = Math.floor(Math.random() * themes.length);
+    var theme = themes[i];
+    config.DOM.objs.roster.select(theme);
+
+    /* NEW: the seed used to only change what's displayed, not the roster's
+       actual scroll position — which stayed at 0 regardless of which agent
+       got picked. Land on Killjoy (say) with the scroll still at 0 and the
+       first backward gesture has nowhere to go, since as far as the scroller
+       is concerned there is no "before" the top — it reads as the seeded
+       agent being stuck rather than as "you haven't scrolled yet". This
+       moves the real position to match, on whichever engine js/controls.js
+       is actually running (window.__rosterScroller desktop, native scrollTop
+       mobile). */
+    var viewport = document.querySelector('#q-main-list .q-list-part');
+    if (!viewport) return;
+    var target = theme.offsetTop + theme.offsetHeight / 2 - viewport.clientHeight * 0.33;
+    if (window.__rosterScroller) {
+      target = Math.max(0, Math.min(target, window.__rosterScroller.limit.y));
+      window.__rosterScroller.setPosition(0, target);
+    } else {
+      viewport.scrollTop = Math.max(0, target);
+    }
   }
   Intro.prototype.checkForActive = checkForActive;
 
@@ -517,6 +618,26 @@
   Intro.prototype.initialAnimation = function () {
     var self = this;
 
+    /* Everything scroll-driven — the carousel painting its first card, the
+       scrubbed master timeline, the SCROLL chevron, pointer events coming
+       back — switches on here, normally reached from run()'s own onComplete
+       below once column 4's entrance tween finishes at duration + delay =
+       1.8s. Pulled out to its own guarded function because it now has two
+       ways in: that onComplete, and the fallback timer at the bottom of this
+       method. Idempotent (the entered flag) so whichever fires first wins
+       and the other is a plain no-op — no risk of initTimeline() (which
+       attaches the gsap.ticker callback) running twice. */
+    var entered = false;
+    function enterLive() {
+      if (entered) return;
+      entered = true;
+      self.showSlider();
+      self.showScroll();
+      gsap.to('.q-mark', { duration: 1, autoAlpha: 1 });
+      self.initTimeline();
+      togglePointer(document.body, true);
+    }
+
     var run = function (el, n) {
       var o = n % 2 === 0 ? 1 : -1;
       gsap.to(el, {
@@ -538,19 +659,27 @@
           });
         },
         onComplete: function () {
-          if (n === 3) {
-            self.showSlider();
-            self.showScroll();
-            gsap.to('.q-mark', { duration: 1, autoAlpha: 1 });
-            self.initTimeline();
-            togglePointer(document.body, true);
-          }
+          if (n === 3) enterLive();
         }
       });
     };
 
     this.showSkip();
     document.querySelectorAll('#q-intro-title .q-move').forEach(run);
+
+    /* Safety net, not a second code path in practice: under real contention
+       (many tabs, a slow/throttled machine — reproduced here by deliberately
+       loading the test browser with a dozen other tabs and dev servers) a
+       GSAP tween can be created and then simply never progress, even while
+       the ticker keeps advancing elsewhere on the page. Nothing timeboxed
+       run()'s onComplete before this, so a stall there stuck the piece on
+       the title screen forever — titles still read as "done" (their resting
+       position is what's on screen either way), the carousel just never
+       shows up and scrolling does nothing, which is exactly the failure this
+       fixes. 4000ms is more than double the nominal 1.8s completion time, so
+       a healthy run always reaches enterLive() through run()'s own
+       onComplete first; this only ever rescues a stalled one. */
+    setTimeout(enterLive, 4000);
   };
 
   Intro.prototype.initEvents = function () {
@@ -577,6 +706,16 @@
     config.DOM.objs = {};
     config.DOM.objs.preview = new Preview(document.querySelector('#q-preview'));
     config.DOM.objs.roster = new Roster(document.querySelector('#q-themes'));
+
+    // NEW: the one way anything outside this file changes the selected agent
+    // now — js/controls.js's scroll selection, arrow keys and role-filter
+    // fallback all call this instead of firing a synthetic mouseenter.
+    window.__roster = {
+      select: function (index) {
+        var theme = document.querySelector('#q-themes .q-theme[data-index="' + index + '"]');
+        if (theme) config.DOM.objs.roster.select(theme);
+      }
+    };
 
     if (isPhone()) {
       // Land where the hand-off would have landed, without the six screens in

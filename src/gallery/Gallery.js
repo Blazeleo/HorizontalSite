@@ -88,7 +88,6 @@ export default function Gallery() {
   const runwayRef = useRef(null);
   const pinRef = useRef(null);
   const frameRef = useRef(null);
-  const skewRef = useRef(null);
   const phaseRef = useRef("approach");
   // Whether this copy of the piece has already spent its briefing. Tracked on
   // its own rather than read back off the phase: the phase is also parked at
@@ -299,17 +298,6 @@ export default function Gallery() {
         }
       }
 
-      // The skew readout is the instrument made visible: this is the number the
-      // piece is already computing from scroll velocity and writing into
-      // --skewX. Updated by hand rather than through state — it changes every
-      // frame, and a 60fps React render to print two digits is absurd.
-      const readout = skewRef.current;
-      if (readout) {
-        const val = intro && introLive ? intro.val : 0;
-        const text = (val > 0 ? "+" : val < 0 ? "−" : "±") + Math.abs(val).toFixed(1);
-        if (readout.textContent !== text) readout.textContent = text;
-      }
-
       if (!win || !cfg) setPhaseOnce(open >= 1 ? "briefing" : "approach");
       else if (!introLive) {
         spentRef.current = true;
@@ -395,12 +383,13 @@ export default function Gallery() {
     </div>
   );
 
-  // Landing on the roster is a change of instrument, and nothing on screen says
-  // so: the briefing answered to scroll, and the thing that arrives answers to
-  // the pointer. The piece's own .q-keyhint lists the keys on this beat, but it
-  // is a five-word legend in 8px type at the top of the screen, and the reader
-  // has spent the last five screens with a hand on the wheel and no reason to
-  // look up there.
+  // Landing on the roster is a change of register, and nothing on screen says
+  // so: the briefing scrubs on scroll, and the roster underneath it now
+  // answers to the same scroll rather than a hover — see js/controls.js's
+  // bindScrollSelection in the piece itself. The piece's own .q-keyhint lists
+  // the keys on this beat, but it is a five-word legend in 8px type at the
+  // top of the screen, and the reader has spent the last five screens with a
+  // hand on the wheel and no reason to look up there.
   //
   // So the prompt is shown once, at the hand-off, and it is dismissed by the
   // gesture it asks for rather than by a timer — move the pointer, press a key,
@@ -427,16 +416,17 @@ export default function Gallery() {
     // only decides how early that can count. Anything they do inside the floor
     // still works — it just does not also delete the sentence explaining it.
     const arm = setTimeout(() => {
-      // pointermove needs real movement, so a pointer resting over the frame
-      // while the reader wheels past does not count as taking over
-      doc.addEventListener("pointermove", done, { once: true, passive: true });
+      // wheel, not pointermove: the roster answers to scroll now, not a
+      // resting pointer, so a hand that hasn't moved the wheel yet hasn't
+      // taken over — see the prompt copy above ("Scroll the roster").
+      doc.addEventListener("wheel", done, { once: true, passive: true });
       doc.addEventListener("keydown", done, { once: true });
       doc.addEventListener("click", done, { once: true });
     }, PROMPT_MIN_MS);
 
     return () => {
       clearTimeout(arm);
-      doc.removeEventListener("pointermove", done);
+      doc.removeEventListener("wheel", done);
       doc.removeEventListener("keydown", done);
       doc.removeEventListener("click", done);
     };
@@ -527,8 +517,8 @@ export default function Gallery() {
           <div className="gallery-frame">{embed}</div>
 
           <div className="gallery-prompt" aria-hidden="true">
-            <span className="gallery-prompt-cue">Move over a name</span>
-            <span className="gallery-prompt-sub">the roster follows your pointer</span>
+            <span className="gallery-prompt-cue">Scroll the roster</span>
+            <span className="gallery-prompt-sub">click a name to open their dossier</span>
           </div>
 
           {/* The reader's own scroll, read back to them as an instrument.
@@ -546,12 +536,6 @@ export default function Gallery() {
               ))}
             </div>
             <div className="gallery-rail-foot">
-              <div className="gallery-rail-skew" aria-hidden="true">
-                <span className="gallery-rail-skew-key">skewX</span>
-                <span className="gallery-rail-skew-val" ref={skewRef}>
-                  ±0.0
-                </span>
-              </div>
               <button type="button" className="gallery-skip" onClick={skipToRoster}>
                 Skip to roster ↓
               </button>
