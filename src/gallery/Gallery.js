@@ -21,7 +21,12 @@ const HANDOFF_AT = 0.675;
 // the tail past the hand-off (32.5% of it, ~85vh) left over as the stretch where
 // the roster is live and the reader still has runway to play in before the
 // section lets go.
-const RUNWAY_SCREENS = 2.6;
+//
+// Was 2.6 — scaled up by the same 1.5x the piece's own standalone runway
+// (public/valorant/css/valorant.css's #q-scroll-vh, 600vh -> 900vh) went up
+// by, so the embedded and standalone builds still take the same *feel* of
+// scrolling to get through the briefing, not just the standalone one.
+const RUNWAY_SCREENS = 3.9;
 
 // The piece damps its own wheel input at 0.15 (SPEC §1). Driving setPosition
 // straight from scroll would bypass that and hand the velocity maths a step

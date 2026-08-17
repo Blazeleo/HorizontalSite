@@ -53,14 +53,20 @@ img { max-width: 100%; vertical-align: middle; }
 .q-move { will-change: transform; }
 
 /* ---------------------------------------------------------------------------
-   Scroll surface. 600vh of nothing; its offset is the intro's clock.
---------------------------------------------------------------------------- */
+   Scroll surface. 900vh of nothing; its offset is the intro's clock.
+
+   Was 600vh — every wheel notch or trackpad tick was a bigger slice of
+   masterTl's progress than it needed to be, so the titles/carousel/roster
+   reveal read as a series of instant jumps rather than a scrub. Same
+   scroll input now covers less of the timeline per pixel, which is the
+   whole fix: nothing about the timeline, easing or hand-off point changed,
+   only how much physical scrolling it takes to get through it. */
 #q-scroll-vh {
   position: absolute; top: 0; left: 0;
   height: 100%; width: 100%;
   overflow: hidden;
 }
-#q-scroll-vh .q-sizer { height: 600vh; }
+#q-scroll-vh .q-sizer { height: 900vh; }
 #q-scroll-vh .scroll-content { transform: translate3d(0, 0, 0); }
 
 /* ---------------------------------------------------------------------------

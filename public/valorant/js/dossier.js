@@ -362,9 +362,19 @@
         { autoAlpha: 0, y: 16 },
         { autoAlpha: 1, y: 0, duration: 0.5, stagger: 0.06, delay: 0.15 });
 
+      // damping was 0.15, same long-glide value the roster's own scroller had
+      // before js/controls.js's bindRosterScrollDesktop was bumped to 0.3 for
+      // exactly this reason: damping paces how many frames a wheel/drag
+      // impulse takes to resolve, not how far it travels, and 0.15 spreads
+      // that resolution over enough frames to read as lag rather than glide
+      // once a reader is doing it repeatedly — flipping between abilities
+      // here, same as flipping between agents there. Matched to the same
+      // 0.3, scoped to just this scroller: the intro's own #q-scroll-vh
+      // instance (js/valorant.js) is untouched, so its just-tuned pacing
+      // doesn't shift.
       var vertical = isVertical();
       this.sb = new SmoothScroll('#q-dossier-scroll', '#q-dossier',
-        { damping: 0.15, horizontal: !vertical });
+        { damping: 0.3, horizontal: !vertical });
       this.fx = new DossierFX(this.sb, this.scrollEl, vertical);
 
       // The rail picks an ability; the dossier's own scrollbar is what moves.

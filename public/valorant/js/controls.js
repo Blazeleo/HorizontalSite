@@ -388,7 +388,18 @@
     // it at a lower z-index with pointer-events:none, so a wheel gesture
     // anywhere over the roster screen — art included — bubbles up through
     // #q-main-list's own full-bleed box and reaches this delegate either way.
-    var scroller = new SmoothScroll('#q-main-list .q-list-part', '#q-main-list', { damping: 0.15 });
+    // damping was 0.15, same as the intro and dossier — but damping only
+    // controls how many frames a given wheel impulse takes to resolve, not
+    // how far it travels (js/smooth-scroll.js's _nextTick: the total
+    // distance covered by one impulse is the momentum itself regardless of
+    // damping, only the pacing changes). At 0.15 that pacing is a long,
+    // floaty glide, which reads as smooth on the intro's one-time scrub but
+    // as laggy here, where a reader flips between names continuously and
+    // feels every one of those frames as a delay before the next name
+    // settles. Bumped just for this surface, not shared globally, since the
+    // intro's own feel was only just tuned (its own scroll *length*, not
+    // this) and the dossier's horizontal drag has different expectations.
+    var scroller = new SmoothScroll('#q-main-list .q-list-part', '#q-main-list', { damping: 0.3 });
     window.__rosterScroller = scroller;
 
     /* ---- the loop ----------------------------------------------------
