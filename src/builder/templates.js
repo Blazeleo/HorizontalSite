@@ -148,12 +148,34 @@ function scrollDrivenCss({ items, palette }) {
   const list = itemsOrDefault(items);
   return {
     title: "CSS Scroll-Driven Animation",
-    html: `<h2 style="padding:2rem 6vw 0">Scroll-Driven CSS</h2>${runwayShell(`<div class="sda-track">${list.map((l, i) => cardHtml(l, i, palette)).join("")}</div>`, 220)}<div class="wrap"><p class="hint" id="sdaNote">Pure CSS — animation-timeline: view(x). No scroll listener runs at all.</p></div>`,
+    // Two bugs stacked here, both now fixed:
+    //
+    // 1. Wrong timeline axis. view(x) tracks the element's progress along
+    //    the *horizontal* axis relative to the viewport — but this page only
+    //    ever scrolls vertically, so there was no x-axis motion for it to
+    //    measure at all. The demo's own idea (vertical scroll drives a
+    //    horizontal translateX) needs the *block* axis, i.e. view(block) —
+    //    same axis the page actually scrolls on; the animation it drives can
+    //    still move the element however it wants (here, sideways).
+    //
+    // 2. NOT runwayShell for the wrapper — that wrapper's .pin is
+    //    position:sticky, built for the scroll-jack technique's own
+    //    rAF-driven translateX. Once a sticky element engages, its own
+    //    position in the viewport stops changing, which freezes *any* view()
+    //    axis reading off it, not just x. .sda-runway is its own plain tall
+    //    block (same 220vh of scroll room as before) with no sticky, so
+    //    .sda-track actually travels through the viewport and the native
+    //    timeline has something real to read.
+    //
+    // Confirmed both were needed: with only #2 fixed (axis still x), the
+    // transform stayed frozen at the exact same value across the entire
+    // scrollable range, live-measured in the console rather than eyeballed.
+    html: `<h2 style="padding:2rem 6vw 0">Scroll-Driven CSS</h2><div class="sda-runway"><div class="sda-track">${list.map((l, i) => cardHtml(l, i, palette)).join("")}</div></div><div class="wrap"><p class="hint" id="sdaNote">Pure CSS — animation-timeline: view(block). No scroll listener runs at all.</p></div>`,
     css: `${BASE_CSS(palette)}
-${RUNWAY_CSS}
+.sda-runway{position:relative;width:100%;height:220vh;display:flex;flex-direction:column;justify-content:center;}
 .sda-track{display:flex;gap:2rem;align-items:center;padding-left:6vw;animation-name:sda-slide;animation-timing-function:linear;animation-fill-mode:both;}
 @supports (animation-timeline: view()) {
-  .sda-track{animation-timeline:view(x);animation-range:entry 0% exit 100%;}
+  .sda-track{animation-timeline:view(block);animation-range:entry 0% exit 100%;}
 }
 @keyframes sda-slide{ from{transform:translateX(0)} to{transform:translateX(-55%)} }
 `,
