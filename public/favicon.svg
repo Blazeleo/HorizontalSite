@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Same palette as the site itself (src/theme.css: the blue / pink
+       custom properties), not colours picked new for this icon. The mark
+       is the site's own "/" —
+       the wordmark is literally "mot/on scroll" — redrawn bold enough to
+       read at 16-32px rather than reusing the wordmark's thin display-font
+       stroke, which disappears at favicon scale. -->
+  <rect width="32" height="32" rx="7" fill="#2B27E7" />
+  <path d="M21 6 L13 26" fill="none" stroke="#FF236D"
+    stroke-width="4.4" stroke-linecap="round" />
+</svg>
